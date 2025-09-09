@@ -4,10 +4,14 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-// ✅ Rota corrigida: agora responde em /api/dispositivos
+// POST /api/dispositivos
 router.post('/', async (req, res) => {
   try {
     const { nome, deviceId, usuarioId } = req.body;
+
+    if (!nome || !deviceId || !usuarioId) {
+      return res.status(400).json({ erro: 'Campos obrigatórios ausentes' });
+    }
 
     const dispositivo = await prisma.dispositivo.create({
       data: {

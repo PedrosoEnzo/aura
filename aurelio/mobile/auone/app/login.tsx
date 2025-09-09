@@ -19,7 +19,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://10.92.199.8:3000/api/login", {
+      const response = await fetch("http://10.92.199.8:3000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -30,7 +30,7 @@ export default function Login() {
       if (response.ok) {
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("usuarioId", data.usuario.id);
-        router.push("/cadastroDisp"); // redireciona para próxima tela
+        router.push("/home"); // ou "/cadastroDisp" se quiser ir direto pra cadastro
       } else {
         Alert.alert("Erro", data.erro || "Credenciais inválidas");
       }
@@ -54,6 +54,8 @@ export default function Login() {
             onChangeText={setEmail}
             autoCapitalize="none"
             keyboardType="email-address"
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
           />
           <TextInput
             style={styles.inputs}
@@ -61,11 +63,13 @@ export default function Login() {
             value={senha}
             onChangeText={setSenha}
             secureTextEntry
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
           />
         </View>
         <Text style={styles.esqueceuSenha}>
           Esqueceu sua senha?
-          <Link href={"/cadastroDisp"}>
+          <Link href={"/#"}>
             <Text style={styles.esqueceuSenha2}> Criar Nova</Text>
           </Link>
         </Text>
@@ -145,11 +149,11 @@ const styles = StyleSheet.create({
     width: 200,
     height: 45,
     borderRadius: 20,
-    backgroundColor: "#e6ffe6",
+    backgroundColor: "#042b00",
   },
   textoBotao: {
-    color: "#042b00",
-    fontSize: 18,
+    color: "#fff",
+    fontSize: 20,
     fontWeight: "600",
   },
   botaoCadastro: {

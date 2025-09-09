@@ -55,8 +55,12 @@ export default function CadastroDispositivo() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert('Sucesso', 'Dispositivo cadastrado!');
-        router.push('/#'); // ou qualquer rota que você queira
+        Alert.alert('Sucesso', 'Dispositivo cadastrado!', [
+          {
+            text: 'OK',
+            onPress: () => router.push('/home'), // redireciona após o alerta
+          },
+        ]);
       } else {
         Alert.alert('Erro', data.erro || 'Não foi possível cadastrar o dispositivo.');
       }
@@ -76,6 +80,9 @@ export default function CadastroDispositivo() {
         placeholder="Digite o ID do dispositivo"
         value={deviceId}
         onChangeText={setDeviceId}
+        autoCapitalize="none"
+        underlineColorAndroid="transparent"
+        selectionColor="#042b00"
       />
       <TouchableOpacity style={styles.botao} onPress={cadastrarDispositivo}>
         <Text style={styles.botaoTexto}>Cadastrar</Text>
@@ -105,23 +112,31 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: '#042b00',
+    borderRadius: 20,
     padding: 12,
     marginBottom: 20,
-    width: 350
+    width: 350,
+    backgroundColor: '#f5f5f5',
+    color: '#042b00',
+    fontWeight: '500',
   },
   botao: {
     backgroundColor: '#042b00',
     paddingVertical: 12,
-    borderRadius: 8,
-    width: 150,
+    borderRadius: 20,
+    width: 200,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
+    shadowColor: "#042b00",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   botaoTexto: {
     color: '#fff',
     fontWeight: 'bold',
-    textAlign: 'center',
+    fontSize: 16,
   },
 });

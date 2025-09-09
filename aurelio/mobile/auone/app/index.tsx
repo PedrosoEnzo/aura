@@ -30,14 +30,10 @@ export default function Home() {
             source={require("../assets/images/auone.png")}
             style={{ width: 300, height: 200 }}
           />
-          <Text style={styles.titulo}>Conecte seu Dispositivo</Text>
+          <Text style={styles.titulo}>Sua estação ambiental inteligente!</Text>
           {carregando ? (
             <ActivityIndicator size="large" color="#00cc66" />
-          ) : (
-            <Text style={styles.textoPrincipal}>
-              Sua estação ambiental inteligente
-            </Text>
-          )}
+          ) : null}
         </View>
       </View>
     </ScrollView>

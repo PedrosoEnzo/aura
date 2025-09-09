@@ -15,6 +15,7 @@ export default function Cadastro() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [foco, setFoco] = useState("");
   const router = useRouter();
 
   const handleCadastro = async () => {
@@ -29,7 +30,7 @@ export default function Cadastro() {
     }
 
     try {
-      const response = await fetch("http://10.92.199.8:3000/api/cadastro", {
+      const response = await fetch("http://10.92.199.8:3000/api/auth/cadastro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -57,26 +58,40 @@ export default function Cadastro() {
       <View style={styles.corpo}>
         <View style={styles.containerInput}>
           <TextInput
-            style={styles.inputs}
+            style={[styles.inputs, foco === "email" && styles.inputFocado]}
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
+            onFocus={() => setFoco("email")}
+            onBlur={() => setFoco("")}
             autoCapitalize="none"
             keyboardType="email-address"
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
           />
+
           <TextInput
-            style={styles.inputs}
+            style={[styles.inputs, foco === "senha" && styles.inputFocado]}
             placeholder="Senha"
             value={senha}
             onChangeText={setSenha}
+            onFocus={() => setFoco("senha")}
+            onBlur={() => setFoco("")}
             secureTextEntry
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
           />
+
           <TextInput
-            style={styles.inputs}
+            style={[styles.inputs, foco === "confirmar" && styles.inputFocado]}
             placeholder="Confirmar senha"
             value={confirmarSenha}
             onChangeText={setConfirmarSenha}
+            onFocus={() => setFoco("confirmar")}
+            onBlur={() => setFoco("")}
             secureTextEntry
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
           />
         </View>
         <View style={styles.containerBotao}>
@@ -85,7 +100,7 @@ export default function Cadastro() {
           </TouchableOpacity>
           <Text style={styles.botaoCadastro}>
             Já possui conta?
-            <Link href={"/login"}>
+            <Link href={"/cadastroDisp"}>
               <Text style={styles.botaoCadastro2}> Login</Text>
             </Link>
           </Text>
@@ -123,7 +138,6 @@ const styles = StyleSheet.create({
   },
   inputs: {
     borderWidth: 1,
-    borderColor: "#042b00",
     marginBottom: 15,
     width: 300,
     height: 45,
@@ -131,7 +145,17 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     color: "#042b00",
     fontWeight: "500",
+    borderColor: "#042b00",
     backgroundColor: "#f5f5f5",
+  },
+  inputFocado: {
+    borderColor: "#00a859",
+    borderWidth: 2,
+    shadowColor: "#00a859",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   containerBotao: {
     justifyContent: "center",
@@ -147,10 +171,10 @@ const styles = StyleSheet.create({
     width: 200,
     height: 45,
     borderRadius: 20,
-    backgroundColor: "#e6ffe6",
+    backgroundColor: "#042b00",
   },
   textoBotao: {
-    color: "#042b00",
+    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },
