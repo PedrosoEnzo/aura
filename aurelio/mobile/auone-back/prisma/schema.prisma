@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id          String       @id @default(uuid())
+  nome        String?
+  email       String       @unique
+  senhaHash   String
+  dispositivos Dispositivo[]
+  criadoEm    DateTime     @default(now())
+}
+
+model Dispositivo {
+  id          String       @id @default(uuid())
+  nome        String
+  deviceId    String       @unique
+  usuario     Usuario      @relation(fields: [usuarioId], references: [id])
+  usuarioId   String
+  sensores    DadoSensor[]
+  criadoEm    DateTime     @default(now())
+}
+
+model DadoSensor {
+  id              String     @id @default(uuid())
+  dispositivo     Dispositivo @relation(fields: [dispositivoId], references: [id])
+  dispositivoId   String
+  umidadeSolo     Float
+  luminosidade    Float
+  temperaturaSolo Float
+  temperaturaAr   Float
+  criadoEm        DateTime   @default(now())
+}
