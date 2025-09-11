@@ -49,10 +49,20 @@ router.put('/perfil', async (req, res) => {
       return res.status(401).json({ erro: 'Token inválido' })
     }
 
-    const { nome, email, profissao, empresa, foto } = req.body
+    const { nome, email, profissao, empresa, foto, areaTotal, cultivos, dispositivosAtivos } = req.body
     const usuario = await prisma.usuario.update({
       where: { id: userId },
-      data: { nome, email, profissao, empresa, foto },
+      data: {
+        nome,
+        email,
+        profissao,
+        empresa,
+        foto,
+        areaTotal: areaTotal !== undefined ? Number(areaTotal) : undefined,
+        cultivos,
+        dispositivosAtivos: dispositivosAtivos !== undefined ? Number(dispositivosAtivos) : undefined,
+        ultimaAtualizacao: new Date(),
+      },
     })
 
     res.json(usuario)
