@@ -109,6 +109,7 @@ export default function Perfil() {
           style={styles.avatar}
         />
       </View>
+      <View style={{ height: 80 }} />
       <Text style={styles.title}>Atualize e edite seus dados:</Text>
       {editMode ? (
         <>
