@@ -16,6 +16,7 @@ model Usuario {
   empresa     String?      // Empresa do usuário
   dispositivos Dispositivo[]
   criadoEm    DateTime     @default(now())
+  foto        String?      // URL ou caminho da foto do usuário
 }
 
 model Dispositivo {

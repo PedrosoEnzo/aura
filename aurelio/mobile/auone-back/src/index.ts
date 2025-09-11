@@ -18,7 +18,8 @@ app.use(cors({
   origin: '*', // ou 'http://localhost:3000' se quiser limitar
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 // ✅ Rotas organizadas por funcionalidade
 app.use('/api/auth', authRoutes);           // ex: /api/auth/login
