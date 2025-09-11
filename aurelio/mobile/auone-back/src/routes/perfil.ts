@@ -34,4 +34,31 @@ router.get('/perfil', async (req, res) => {
   }
 })
 
+// Adiciona rota de atualização de perfil do usuário autenticado
+router.put('/perfil', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if (!token) return res.status(401).json({ erro: 'Token não fornecido' })
+
+    let userId: string
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
+      userId = decoded.id
+    } catch (err) {
+      return res.status(401).json({ erro: 'Token inválido' })
+    }
+
+    const { nome, email, profissao, empresa } = req.body
+    const usuario = await prisma.usuario.update({
+      where: { id: userId },
+      data: { nome, email, profissao, empresa },
+    })
+
+    res.json(usuario)
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao atualizar perfil', detalhe: String(error) })
+  }
+})
+
 export default router

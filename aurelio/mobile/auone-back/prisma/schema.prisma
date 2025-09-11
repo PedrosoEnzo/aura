@@ -12,6 +12,8 @@ model Usuario {
   nome        String?
   email       String       @unique
   senhaHash   String
+  profissao   String?      // Profissão do usuário
+  empresa     String?      // Empresa do usuário
   dispositivos Dispositivo[]
   criadoEm    DateTime     @default(now())
 }

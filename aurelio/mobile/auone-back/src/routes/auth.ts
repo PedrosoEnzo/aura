@@ -13,7 +13,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'audne-secret';
 // Cadastro
 router.post('/cadastro', async (req, res) => {
   try {
-    const { email, senha } = req.body;
+    const { nome, email, senha, profissao, empresa } = req.body;
+
+    if (!nome || !email || !senha || !profissao || !empresa) {
+      return res.status(400).json({ erro: 'Preencha nome, email, senha, profissão e empresa.' });
+    }
 
     const existe = await prisma.usuario.findUnique({ where: { email } });
     if (existe) {
@@ -23,10 +27,13 @@ router.post('/cadastro', async (req, res) => {
     const senhaHash = await bcrypt.hash(senha, 10);
 
     const usuario = await prisma.usuario.create({
-      data: { email, senhaHash },
+      data: { nome, email, senhaHash, profissao, empresa },
     });
 
-    res.status(201).json({ mensagem: 'Usuário criado com sucesso', usuario });
+    // Gerar token JWT após cadastro
+    const token = jwt.sign({ id: usuario.id }, JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(201).json({ mensagem: 'Usuário criado com sucesso', usuario, token });
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(500).json({ erro: 'Erro ao cadastrar usuário', detalhe: error.message });

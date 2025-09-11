@@ -13,14 +13,17 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Cadastro() {
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [profissao, setProfissao] = useState("");
+  const [empresa, setEmpresa] = useState("");
   const [foco, setFoco] = useState("");
   const router = useRouter();
 
   const handleCadastro = async () => {
-    if (!email || !senha || !confirmarSenha) {
+    if (!nome || !email || !senha || !confirmarSenha || !profissao || !empresa) {
       Alert.alert("Erro", "Preencha todos os campos.");
       return;
     }
@@ -31,15 +34,22 @@ export default function Cadastro() {
     }
 
     try {
+      console.log('Dados enviados para cadastro:', { nome, email, senha, profissao, empresa });
       const response = await fetch("http://10.92.199.10:3000/api/auth/cadastro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ nome, email, senha, profissao, empresa }),
       });
 
       const data = await response.json();
 
-      if (response.ok && data.usuario?.id && data.token) {
+      if (!response.ok) {
+        // Exibe erro detalhado do backend
+        Alert.alert("Erro", data.erro || JSON.stringify(data));
+        return;
+      }
+
+      if (data.usuario?.id && data.token) {
         // Salva o token e o ID como string
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("usuarioId", String(data.usuario.id));
@@ -47,7 +57,7 @@ export default function Cadastro() {
         Alert.alert("Sucesso", "Cadastro realizado com sucesso!");
         router.push("/home");
       } else {
-        Alert.alert("Erro", data.erro || "Não foi possível cadastrar.");
+        Alert.alert("Erro", "Não foi possível cadastrar.");
       }
     } catch (error) {
       console.error("Erro no cadastro:", error);
@@ -63,6 +73,18 @@ export default function Cadastro() {
       <Text style={styles.textoPrincipal}>Cadastro</Text>
       <View style={styles.corpo}>
         <View style={styles.containerInput}>
+          <TextInput
+            style={[styles.inputs, foco === "nome" && styles.inputFocado]}
+            placeholder="Nome"
+            value={nome}
+            onChangeText={setNome}
+            onFocus={() => setFoco("nome")}
+            onBlur={() => setFoco("")}
+            autoCapitalize="words"
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
+          />
+
           <TextInput
             style={[styles.inputs, foco === "email" && styles.inputFocado]}
             placeholder="Email"
@@ -96,6 +118,30 @@ export default function Cadastro() {
             onFocus={() => setFoco("confirmar")}
             onBlur={() => setFoco("")}
             secureTextEntry
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
+          />
+
+          <TextInput
+            style={[styles.inputs, foco === "profissao" && styles.inputFocado]}
+            placeholder="Profissão"
+            value={profissao}
+            onChangeText={setProfissao}
+            onFocus={() => setFoco("profissao")}
+            onBlur={() => setFoco("")}
+            autoCapitalize="words"
+            underlineColorAndroid="transparent"
+            selectionColor="#042b00"
+          />
+
+          <TextInput
+            style={[styles.inputs, foco === "empresa" && styles.inputFocado]}
+            placeholder="Empresa"
+            value={empresa}
+            onChangeText={setEmpresa}
+            onFocus={() => setFoco("empresa")}
+            onBlur={() => setFoco("")}
+            autoCapitalize="words"
             underlineColorAndroid="transparent"
             selectionColor="#042b00"
           />

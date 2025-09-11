@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Detecta ambiente automaticamente
@@ -18,13 +18,20 @@ interface Usuario {
   id: string;
   nome: string;
   email: string;
+  profissao?: string;
+  empresa?: string;
   erro?: string;
 }
 
 export default function Perfil() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({ nome: '', email: '' });
+  const [formData, setFormData] = useState({
+    nome: '',
+    email: '',
+    profissao: '',
+    empresa: '',
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +54,12 @@ export default function Perfil() {
         if (!res.ok) throw new Error(`Erro HTTP! Status: ${res.status}`);
         const data: Usuario = await res.json();
         setUsuario(data);
-        setFormData({ nome: data.nome, email: data.email });
+        setFormData({
+          nome: data.nome || '',
+          email: data.email || '',
+          profissao: data.profissao || '',
+          empresa: data.empresa || '',
+        });
       } catch (error) {
         setUsuario({ id: '', nome: '', email: '', erro: 'Não foi possível carregar os dados.' });
       } finally {
@@ -68,7 +80,7 @@ export default function Perfil() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/atualizarperfil`, {
+      const res = await fetch(`${API_URL}/perfil`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -92,42 +104,61 @@ export default function Perfil() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Perfil do Usuário</Text>
-      {usuario?.erro ? (
-        <Text style={styles.error}>{usuario.erro}</Text>
-      ) : editMode ? (
+      <View style={styles.avatarContainer}>
+        <Image
+          style={styles.avatar}
+        />
+      </View>
+      <Text style={styles.title}>Atualize e edite seus dados:</Text>
+      {editMode ? (
         <>
-          <Text style={styles.label}>Nome:</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.nome}
-            onChangeText={(text) => handleChange('nome', text)}
-          />
-          <Text style={styles.label}>Email:</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.email}
-            onChangeText={(text) => handleChange('email', text)}
-            keyboardType="email-address"
-          />
+          <View style={styles.section}>
+            <TextInput
+              style={styles.inputStyled}
+              value={formData.nome}
+              onChangeText={(text) => handleChange('nome', text)}
+              placeholder="Nome"
+            />
+            <TextInput
+              style={styles.inputStyled}
+              value={formData.email}
+              onChangeText={(text) => handleChange('email', text)}
+              placeholder="Email"
+              keyboardType="email-address"
+            />
+            <TextInput
+              style={styles.inputStyled}
+              value={formData.profissao}
+              onChangeText={(text) => handleChange('profissao', text)}
+              placeholder="Profissão"
+            />
+            <TextInput
+              style={styles.inputStyled}
+              value={formData.empresa}
+              onChangeText={(text) => handleChange('empresa', text)}
+              placeholder="Empresa"
+            />
+          </View>
           <View style={styles.buttonGroup}>
-            <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
-              <Text style={styles.buttonText}>Salvar</Text>
+            <TouchableOpacity style={[styles.updateButton, { marginRight: 10 }]} onPress={handleSave}>
+              <Text style={styles.updateButtonText}>Salvar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => setEditMode(false)}>
-              <Text style={styles.buttonText}>Cancelar</Text>
+            <TouchableOpacity style={[styles.updateButton, { backgroundColor: '#f44336' }]} onPress={() => setEditMode(false)}>
+              <Text style={styles.updateButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </>
       ) : (
         <>
-          <Text style={styles.info}><Text style={styles.bold}>Nome:</Text> {usuario?.nome}</Text>
-          <Text style={styles.info}><Text style={styles.bold}>Email:</Text> {usuario?.email}</Text>
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity style={[styles.button, styles.editButton]} onPress={() => setEditMode(true)}>
-              <Text style={styles.buttonText}>Editar</Text>
-            </TouchableOpacity>
+          <View style={styles.section}>
+            <Text style={styles.inputStyled}>{formData.nome}</Text>
+            <Text style={styles.inputStyled}>{formData.email}</Text>
+            <Text style={styles.inputStyled}>{formData.profissao}</Text>
+            <Text style={styles.inputStyled}>{formData.empresa}</Text>
           </View>
+          <TouchableOpacity style={styles.updateButton} onPress={() => setEditMode(true)}>
+            <Text style={styles.updateButtonText}>Editar</Text>
+          </TouchableOpacity>
         </>
       )}
     </ScrollView>
@@ -136,62 +167,65 @@ export default function Perfil() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    backgroundColor: '#f2f2f2',
     flexGrow: 1,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    padding: 24,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#e0e0e0',
   },
   title: {
-    fontSize: 26,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: 'center',
   },
-  label: {
-    fontSize: 16,
-    marginTop: 10,
+  section: {
+    width: '100%',
+    marginBottom: 18,
   },
-  input: {
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
+  inputStyled: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#1b5e20',
+    borderRadius: 20,
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: '#f5f5f5',
+    fontSize: 16,
+    color: '#042b00',
   },
-  info: {
-    fontSize: 18,
-    marginBottom: 10,
+  updateButton: {
+    backgroundColor: '#1b5e20',
+    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 30,
   },
-  bold: {
-    fontWeight: 'bold',
-  },
-  buttonGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 20,
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  saveButton: {
-    backgroundColor: '#4CAF50',
-  },
-  cancelButton: {
-    backgroundColor: '#f44336',
-  },
-  editButton: {
-    backgroundColor: '#2196F3',
-  },
-  buttonText: {
+  updateButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 18,
+    textAlign: 'center',
   },
   error: {
     color: 'red',
     textAlign: 'center',
     fontSize: 16,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
   },
 });
