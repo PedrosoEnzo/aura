@@ -18,6 +18,11 @@ export default function Login() {
   const router = useRouter();
 
   const handleLogin = async () => {
+    if (!email || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos.");
+      return;
+    }
+
     try {
       const response = await fetch("http://10.92.199.10:3000/api/auth/login", {
         method: "POST",
@@ -27,7 +32,7 @@ export default function Login() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.usuario?.id && data.token) {
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("usuarioId", data.usuario.id);
         router.push("/home");
@@ -35,6 +40,7 @@ export default function Login() {
         Alert.alert("Erro", data.erro || "Credenciais inválidas");
       }
     } catch (error) {
+      console.error("Erro de login:", error);
       Alert.alert("Erro", "Não foi possível conectar ao servidor");
     }
   };

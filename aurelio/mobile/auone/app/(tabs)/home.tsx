@@ -3,81 +3,88 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
-  TouchableOpacity,
+  ActivityIndicator,
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+type Usuario = {
+  id: string;
+  nome: string;
+  email: string;
+  dispositivos: any[];
+};
+
 export default function Dashboard() {
-  const [usuario, setUsuario] = useState(null);
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     const carregarDados = async () => {
-      const usuarioId = await AsyncStorage.getItem("usuarioId");
-      if (!usuarioId) {
-        Alert.alert("Erro", "Usuário não autenticado.");
-        return;
-      }
-
       try {
-        const res = await fetch(`http://10.92.199.8:3000/api/usuario/${usuarioId}`);
+        const usuarioId = await AsyncStorage.getItem("usuarioId");
+
+        if (!usuarioId || usuarioId === "null") {
+          Alert.alert("Erro", "Usuário não autenticado.");
+          setCarregando(false);
+          return;
+        }
+
+        const res = await fetch(`http://10.92.199.10:3000/api/usuarios/${usuarioId}`);
         const json = await res.json();
-        setUsuario(json);
+        console.log('Dados recebidos do backend:', json); // Adicionado para depuração
+
+        if (res.ok && json && json.id) {
+          setUsuario(json);
+        } else {
+          Alert.alert("Erro", json.erro || "Não foi possível carregar os dados do usuário.");
+        }
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
-        Alert.alert("Erro", "Não foi possível carregar os dados.");
+        Alert.alert("Erro", "Falha na conexão com o servidor.");
+      } finally {
+        setCarregando(false);
       }
     };
+
     carregarDados();
   }, []);
 
-  if (!usuario) return <Text style={{ marginTop: 50, textAlign: "center" }}>Carregando...</Text>;
+  if (carregando) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#042b00" />
+        <Text style={{ marginTop: 10, color: "#042b00" }}>Carregando dados...</Text>
+      </View>
+    );
+  }
+
+  if (!usuario) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={{ color: "#042b00" }}>Usuário não encontrado.</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.titulo}>{usuario.nome || "Usuário sem nome"}</Text>
       <Text style={styles.subtitulo}>{usuario.email}</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>Dispositivos Ativos:</Text>
-        <Text style={styles.valor}>{usuario.dispositivos?.length || 0}</Text>
-      </View>
-
-      {usuario.dispositivos?.length > 0 && (
-        <Text style={[styles.label, { marginBottom: 10 }]}>Últimos dados dos sensores:</Text>
-      )}
-
-      {usuario.dispositivos?.map((disp, index) => {
-        const sensor = disp.sensores?.[0];
-        return (
-          <View key={disp.id} style={styles.dispositivoCard}>
-            <Text style={styles.dispositivoTitulo}>{disp.nome || `Dispositivo ${index + 1}`}</Text>
-            {sensor ? (
-              <>
-                <Text style={styles.metric}>🌱 Umidade: {sensor.umidadeSolo}%</Text>
-                <Text style={styles.metric}>🌡️ Temp. Solo: {sensor.temperaturaSolo}°C</Text>
-                <Text style={styles.metric}>🌬️ Temp. Ar: {sensor.temperaturaAr}°C</Text>
-                <Text style={styles.metric}>☀️ Luminosidade: {sensor.luminosidade} lux</Text>
-                <Text style={styles.metric}>📅 Leitura: {new Date(sensor.criadoEm).toLocaleString()}</Text>
-              </>
-            ) : (
-              <Text style={styles.metric}>Nenhum sensor registrado</Text>
-            )}
-          </View>
-        );
-      })}
-
-      <TouchableOpacity style={styles.botao}>
-        <Text style={styles.botaoTexto}>Gerar Relatório</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 100,
     backgroundColor: "#fff",
   },
   titulo: {
@@ -93,20 +100,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  card: {
-    backgroundColor: "#f0f0f0",
-    padding: 15,
-    borderRadius: 10,
+  valor: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
     marginBottom: 20,
   },
   label: {
     fontWeight: "bold",
     color: "#042b00",
     fontSize: 16,
-  },
-  valor: {
-    fontSize: 16,
-    color: "#333",
   },
   dispositivoCard: {
     backgroundColor: "#e6ffe6",

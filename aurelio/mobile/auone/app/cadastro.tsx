@@ -10,6 +10,7 @@ import {
   View,
   Alert,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Cadastro() {
   const [email, setEmail] = useState("");
@@ -38,13 +39,18 @@ export default function Cadastro() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.usuario?.id && data.token) {
+        // Salva o token e o ID como string
+        await AsyncStorage.setItem("token", data.token);
+        await AsyncStorage.setItem("usuarioId", String(data.usuario.id));
+
         Alert.alert("Sucesso", "Cadastro realizado com sucesso!");
-        router.push("/login");
+        router.push("/home");
       } else {
         Alert.alert("Erro", data.erro || "Não foi possível cadastrar.");
       }
     } catch (error) {
+      console.error("Erro no cadastro:", error);
       Alert.alert("Erro", "Falha na conexão com o servidor.");
     }
   };
