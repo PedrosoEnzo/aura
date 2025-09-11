@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'audne-secret';
 
 // ✅ Rota para receber dados dos sensores (ESP32 envia via POST)
 router.post('/sensores', async (req, res) => {
@@ -70,6 +72,43 @@ router.get('/sensores/:deviceId', async (req, res) => {
     } else {
       res.status(500).json({ erro: 'Erro desconhecido ao consultar dados', detalhe: String(error) });
     }
+  }
+});
+
+// Rota para buscar os dados mais recentes dos sensores dos dispositivos do usuário autenticado
+router.get('/sensores', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) return res.status(401).json({ erro: 'Token não fornecido' });
+
+    let userId: string;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+      userId = decoded.id;
+    } catch (err) {
+      return res.status(401).json({ erro: 'Token inválido' });
+    }
+
+    // Busca dispositivos do usuário
+    const dispositivos = await prisma.dispositivo.findMany({ where: { usuarioId: userId } });
+    const dados = [];
+    for (const disp of dispositivos) {
+      const dado = await prisma.dadoSensor.findFirst({
+        where: { dispositivoId: disp.id },
+        orderBy: { criadoEm: 'desc' },
+      });
+      if (dado) {
+        dados.push({
+          nome: disp.nome,
+          ...dado,
+        });
+      }
+    }
+    // Retorna os dados mais recentes de cada dispositivo
+    res.json(dados.length > 0 ? dados[0] : {});
+  } catch (error) {
+    res.status(500).json({ erro: 'Erro ao buscar dados dos sensores', detalhe: String(error) });
   }
 });
 
