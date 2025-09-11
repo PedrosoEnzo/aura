@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import dispositivosRoutes from './routes/dispositivos';
 import sensoresRoutes from './routes/sensores';
 import usuariosRoutes from './routes/usuario';
+import perfilRoutes from './routes/perfil';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);           // ex: /api/auth/login
 app.use('/api/dispositivos', dispositivosRoutes); // ex: /api/dispositivos
 app.use('/api/sensores', sensoresRoutes);   // ex: /api/sensores
 app.use('/api/usuarios', usuariosRoutes);   // ex: /api/usuarios/:id
+app.use(perfilRoutes); // ex: /perfil
 
 // ✅ Rota raiz para teste rápido
 app.get('/', (req, res) => {
