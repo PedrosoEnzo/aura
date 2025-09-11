@@ -19,7 +19,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://10.92.199.8:3000/api/auth/login", {
+      const response = await fetch("http://10.92.199.10:3000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -30,7 +30,7 @@ export default function Login() {
       if (response.ok) {
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("usuarioId", data.usuario.id);
-        router.push("/home"); // ou "/cadastroDisp" se quiser ir direto pra cadastro
+        router.push("/home");
       } else {
         Alert.alert("Erro", data.erro || "Credenciais inválidas");
       }

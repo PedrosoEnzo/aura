@@ -30,7 +30,7 @@ export default function Cadastro() {
     }
 
     try {
-      const response = await fetch("http://10.92.199.8:3000/api/auth/cadastro", {
+      const response = await fetch("http://10.92.199.10:3000/api/auth/cadastro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -100,7 +100,7 @@ export default function Cadastro() {
           </TouchableOpacity>
           <Text style={styles.botaoCadastro}>
             Já possui conta?
-            <Link href={"/cadastroDisp"}>
+            <Link href={"/login"}>
               <Text style={styles.botaoCadastro2}> Login</Text>
             </Link>
           </Text>
