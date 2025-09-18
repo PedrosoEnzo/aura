@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 const router = Router()
 const prisma = new PrismaClient()
 
-const JWT_SECRET = process.env.JWT_SECRET || 'audne-secret'
+const JWT_SECRET = process.env.JWT_SECRET || 'auone-secret'
 
 router.get('/perfil', async (req, res) => {
   try {

@@ -12,6 +12,14 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin.replace(/:\d+$/, ':3000');
+  }
+  return 'http://localhost:3000';
+};
+const API_URL = getApiUrl();
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -24,7 +32,7 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://10.92.199.10:3000/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),

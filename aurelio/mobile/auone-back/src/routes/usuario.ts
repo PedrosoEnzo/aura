@@ -8,7 +8,7 @@ router.get('/usuario/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ✅ Verifica se o ID é uma string válida
+    // Verifica se o ID é uma string válida
     if (!id || typeof id !== "string") {
       return res.status(400).json({ erro: 'ID inválido' });
     }
@@ -30,7 +30,7 @@ router.get('/usuario/:id', async (req, res) => {
     });
 
     if (!usuario) {
-      console.warn("⚠️ Usuário não encontrado:", id);
+      console.warn("Usuário não encontrado:", id);
       return res.status(404).json({ erro: 'Usuário não encontrado' });
     }
 

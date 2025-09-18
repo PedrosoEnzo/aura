@@ -74,7 +74,7 @@ export default function Home() {
         }
     };
 
-    if (loading) return <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />;
+    if (loading) return <ActivityIndicator size="large" color="#1b5e20" style={{ marginTop: 50 }} />;
 
     return (
         <ScrollView contentContainerStyle={styles.container}>

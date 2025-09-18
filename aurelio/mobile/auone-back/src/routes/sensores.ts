@@ -1,14 +1,19 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import cors from 'cors';
 
 const router = Router();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'audne-secret';
 
-// ✅ Rota para receber dados dos sensores (ESP32 envia via POST)
+// Adiciona CORS global para aceitar requisições do ESP32/Arduino
+router.use(cors());
+
+// Rota para receber dados dos sensores (ESP32 envia via POST quando tiver a bosta do app)
 router.post('/sensores', async (req, res) => {
   try {
+    // Não exige autenticação JWT
     const { deviceId, umidadeSolo, luminosidade, temperaturaSolo, temperaturaAr } = req.body;
 
     const dispositivo = await prisma.dispositivo.findUnique({ where: { deviceId } });
@@ -36,7 +41,7 @@ router.post('/sensores', async (req, res) => {
   }
 });
 
-// ✅ Rota para consultar dados por data (app usa via GET)
+// Rota para consultar dados por data (app usa via GET)
 router.get('/sensores/:deviceId', async (req, res) => {
   try {
     const { deviceId } = req.params;
