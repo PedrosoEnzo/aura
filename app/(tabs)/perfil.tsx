@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+
 
 const getApiUrl = () => {
   if (typeof window !== 'undefined') {
@@ -107,22 +109,28 @@ export default function Perfil() {
       <View style={styles.avatarContainer}>
         <Image style={styles.avatar} source={formData.foto ? { uri: formData.foto } : undefined} />
         {editMode && (
-          <TouchableOpacity style={styles.updateButton} onPress={async () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async (e: any) => {
-              const file = e.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  setFormData((prev) => ({ ...prev, foto: reader.result as string }));
-                };
-                reader.readAsDataURL(file);
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={async () => {
+              const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (permissionResult.granted === false) {
+                Alert.alert('Permissão negada', 'Você precisa permitir acesso à galeria.');
+                return;
               }
-            };
-            input.click();
-          }}>
+
+              const pickerResult = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+              });
+
+              if (!pickerResult.canceled && pickerResult.assets.length > 0) {
+                const selectedImage = pickerResult.assets[0];
+                setFormData((prev) => ({ ...prev, foto: selectedImage.uri }));
+              }
+            }}
+          >
             <Text style={styles.updateButtonText}>Selecionar foto</Text>
           </TouchableOpacity>
         )}
@@ -254,6 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     marginBottom: 12,
     paddingLeft: 12,
+    height: 50
   },
   inputIcon: {
     marginRight: 8,
