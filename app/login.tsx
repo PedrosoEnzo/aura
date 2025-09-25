@@ -12,6 +12,9 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// ✅ URL pública da sua API
+const API_URL = 'https://auone-backend.onrender.com';
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -24,7 +27,7 @@ export default function Login() {
     }
 
     try {
-      const response = await fetch("http://10.92.199.26:3000/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -75,7 +78,7 @@ export default function Login() {
         </View>
         <Text style={styles.esqueceuSenha}>
           Esqueceu sua senha?
-          <Link href={"/#"}>
+          <Link href={"/home"}>
             <Text style={styles.esqueceuSenha2}> Criar Nova</Text>
           </Link>
         </Text>

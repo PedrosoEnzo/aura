@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { MaterialCommunityIcons, Feather, FontAwesome5 } from "@expo/vector-icons";
+import {
+  MaterialCommunityIcons,
+  Feather,
+  FontAwesome5,
+} from "@expo/vector-icons";
 
 const screenWidth = Dimensions.get("window").width;
-const API_URL = "http://localhost:3000"; // ajuste para sua API
+const API_URL = 'https://auone-backend.onrender.com'; // ✅ URL pública da sua API
 
 interface SensorData {
   timestamp: string;
@@ -23,12 +34,28 @@ export default function RelatorioGraficos() {
       setLoading(true);
       try {
         const res = await fetch(`${API_URL}/sensores/historico?horas=24`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
+
+        if (!res.ok) {
+          console.warn("API retornou erro:", res.status);
+          setDados([]);
+          return;
+        }
+
         const data = await res.json();
+        if (!Array.isArray(data)) {
+          console.warn("Resposta inesperada da API");
+          setDados([]);
+          return;
+        }
+
         setDados(data);
       } catch (err) {
         console.error("Erro ao buscar sensores", err);
+        setDados([]);
       } finally {
         setLoading(false);
       }
@@ -39,13 +66,27 @@ export default function RelatorioGraficos() {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) return <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />;
+  if (loading)
+    return (
+      <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
+    );
 
-  const labels = dados.map(d => new Date(d.timestamp).getHours() + "h");
-  const umidade = dados.map(d => d.umidadeSolo);
-  const luminosidade = dados.map(d => d.luminosidade);
-  const tempSolo = dados.map(d => d.tempSolo);
-  const tempAr = dados.map(d => d.tempAr);
+  if (!dados.length) {
+    return (
+      <View style={{ marginTop: 50, alignItems: "center" }}>
+        <Text style={{ color: "#999" }}>Nenhum dado disponível ainda.</Text>
+      </View>
+    );
+  }
+
+  const sanitize = (arr: number[]) =>
+    arr.map((v) => (isFinite(v) ? v : 0));
+
+  const labels = dados.map((d) => new Date(d.timestamp).getHours() + "h");
+  const umidade = sanitize(dados.map((d) => d.umidadeSolo));
+  const luminosidade = sanitize(dados.map((d) => d.luminosidade));
+  const tempSolo = sanitize(dados.map((d) => d.tempSolo));
+  const tempAr = sanitize(dados.map((d) => d.tempAr));
 
   const chartConfig = {
     backgroundGradientFrom: "#fff",
@@ -122,8 +163,8 @@ export default function RelatorioGraficos() {
           data={{
             labels,
             datasets: [
-              { data: tempAr, color: () => "rgba(255, 99, 71, 1)" }, // vermelho p/ temp
-              { data: umidade, color: () => "rgba(30, 136, 229, 1)" }, // azul p/ umidade
+              { data: tempAr, color: () => "rgba(255, 99, 71, 1)" },
+              { data: umidade, color: () => "rgba(30, 136, 229, 1)" },
             ],
             legend: ["Temperatura do Ar (°C)", "Umidade do Solo (%)"],
           }}

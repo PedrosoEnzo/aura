@@ -12,6 +12,9 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// ✅ URL pública da sua API
+const API_URL = 'https://auone-backend.onrender.com';
+
 export default function Cadastro() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -35,7 +38,7 @@ export default function Cadastro() {
 
     try {
       console.log('Dados enviados para cadastro:', { nome, email, senha, profissao, empresa });
-      const response = await fetch("http://10.92.199.26:3000/api/auth/cadastro", {
+      const response = await fetch(`${API_URL}/api/auth/cadastro`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, senha, profissao, empresa }),
@@ -44,13 +47,11 @@ export default function Cadastro() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Exibe erro detalhado do backend
         Alert.alert("Erro", data.erro || JSON.stringify(data));
         return;
       }
 
       if (data.usuario?.id && data.token) {
-        // Salva o token e o ID como string
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("usuarioId", String(data.usuario.id));
 
@@ -84,7 +85,6 @@ export default function Cadastro() {
             underlineColorAndroid="transparent"
             selectionColor="#042b00"
           />
-
           <TextInput
             style={[styles.inputs, foco === "email" && styles.inputFocado]}
             placeholder="Email"
@@ -97,7 +97,6 @@ export default function Cadastro() {
             underlineColorAndroid="transparent"
             selectionColor="#042b00"
           />
-
           <TextInput
             style={[styles.inputs, foco === "senha" && styles.inputFocado]}
             placeholder="Senha"
@@ -109,7 +108,6 @@ export default function Cadastro() {
             underlineColorAndroid="transparent"
             selectionColor="#042b00"
           />
-
           <TextInput
             style={[styles.inputs, foco === "confirmar" && styles.inputFocado]}
             placeholder="Confirmar senha"
@@ -121,7 +119,6 @@ export default function Cadastro() {
             underlineColorAndroid="transparent"
             selectionColor="#042b00"
           />
-
           <TextInput
             style={[styles.inputs, foco === "profissao" && styles.inputFocado]}
             placeholder="Profissão"
@@ -133,7 +130,6 @@ export default function Cadastro() {
             underlineColorAndroid="transparent"
             selectionColor="#042b00"
           />
-
           <TextInput
             style={[styles.inputs, foco === "empresa" && styles.inputFocado]}
             placeholder="Empresa"

@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Image,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
-
-const getApiUrl = () => {
-  if (typeof window !== 'undefined') {
-    return window.location.origin.replace(/:\d+$/, ':3000');
-  }
-  return 'http://localhost:3000';
-};
-const API_URL = getApiUrl();
+// ✅ URL pública da sua API
+const API_URL = 'https://auone-backend.onrender.com';
 
 interface Usuario {
   id: string;
@@ -135,8 +139,9 @@ export default function Perfil() {
           </TouchableOpacity>
         )}
       </View>
-      <View style={{ height: 80 }} />
+
       <Text style={styles.title}>Atualize e edite seus dados:</Text>
+
       {editMode ? (
         <>
           <View style={styles.section}>
