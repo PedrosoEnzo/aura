@@ -12,6 +12,9 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
+//Erro 500
+
 // URL pública do backend
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
 
