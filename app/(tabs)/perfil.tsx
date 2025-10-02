@@ -15,7 +15,7 @@ import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icon
 import * as ImagePicker from 'expo-image-picker';
 
 // ✅ URL pública da sua API
-const API_URL = 'https://auone-backend.onrender.com';
+const API_URL = 'https://auone-backend.onrender.com/api/auth';
 
 interface Usuario {
   id: string;
@@ -86,7 +86,7 @@ export default function Perfil() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/perfil`, {
+      const res = await fetch(`${API_URL}/atualizarPerfil`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

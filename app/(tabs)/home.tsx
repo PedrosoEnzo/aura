@@ -16,7 +16,7 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 
-const API_URL = "https://auone-backend.onrender.com/api";
+const API_URL = "https://auone-backend.onrender.com/api/auth";
 
 interface Usuario {
   id?: string;

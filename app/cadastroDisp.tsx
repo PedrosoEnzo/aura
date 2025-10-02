@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 // ✅ URL pública da sua API
-const API_URL = 'https://auone-backend.onrender.com';
+const API_URL = 'https://auone-backend.onrender.com/api/auth';
 
 export default function CadastroDispositivo() {
   const [deviceId, setDeviceId] = useState('');
@@ -42,7 +42,7 @@ export default function CadastroDispositivo() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/dispositivos`, {
+      const res = await fetch(`${API_URL}/dispositivos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
