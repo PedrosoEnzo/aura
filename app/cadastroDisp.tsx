@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
+  Alert,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Image
+  View
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
 
-// ✅ URL pública da sua API
-const API_URL = 'https://auone-backend.onrender.com/api/auth';
+// URL pública da API
+const API_URL = 'https://aura-back-app.onrender.com/api/auth';
 
 export default function CadastroDispositivo() {
   const [deviceId, setDeviceId] = useState('');

@@ -1,21 +1,21 @@
+import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
   ActivityIndicator,
   Alert,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 
-// ✅ URL pública da sua API
-const API_URL = 'https://auone-backend.onrender.com/api/auth';
+// URL pública da API
+const API_URL = 'https://aura-back-app.onrender.com/api/auth'
 
 interface Usuario {
   id: string;
@@ -52,6 +52,7 @@ export default function Perfil() {
         const res = await fetch(`${API_URL}/perfil`, {
           method: 'GET',
           headers: {
+            
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },

@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  ActivityIndicator,
-} from "react-native";
-import { LineChart } from "react-native-chart-kit";
-import {
-  MaterialCommunityIcons,
   Feather,
   FontAwesome5,
+  MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
-const API_URL = 'https://auone-backend.onrender.com'; // ✅ URL pública da sua API
+const API_URL = 'https://aura-back-app.onrender.com'; // URL pública da API
 
 interface SensorData {
   timestamp: string;

@@ -1,3 +1,9 @@
+import {
+  Feather,
+  FontAwesome5,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,14 +15,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  Feather,
-  FontAwesome5,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
 
-const API_URL = "https://auone-backend.onrender.com/api/auth";
+const API_URL = "https://aura-back-app.onrender.com/api/auth";
 
 interface Usuario {
   id?: string;

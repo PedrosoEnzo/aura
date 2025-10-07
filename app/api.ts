@@ -1,6 +1,6 @@
 // app/api.ts
 
-const API_URL = 'https://auone-backend.onrender.com/api';
+const API_URL = 'https://aura-back-app.onrender.com/api';
 
 // Interfaces para tipagem
 interface Usuario {
