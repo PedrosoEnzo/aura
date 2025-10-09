@@ -462,10 +462,12 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   containerChart: {
-    marginVertical: 20
+    marginVertical: 20,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   textChart: {
-    fontSize: 18, 
+    fontSize: 30, 
     fontWeight: 'bold', 
     color: '#042b00', 
     marginBottom: 8
@@ -485,6 +487,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     color: '#042b00',
     fontSize: 15,
+    width: '90%'
   },
   containerReports: {
     marginTop: 20
