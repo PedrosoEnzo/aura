@@ -1,92 +1,92 @@
 import {
   Feather,
-  FontAwesome5,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
-const API_URL = 'https://aura-back-app.onrender.com'; // URL pública da API
+const API_URL = "http://10.92.199.19:3000/data"; // Rota do ESP32
 
 interface SensorData {
   timestamp: string;
   umidadeSolo: number;
   luminosidade: number;
-  tempSolo: number;
-  tempAr: number;
+  temperaturaAr: number;
+  umidadeAr: number;
+}
+
+interface ChartInfo {
+  label: string;
+  data: number[];
+  color: string;
 }
 
 export default function RelatorioGraficos() {
   const [loading, setLoading] = useState(true);
   const [dados, setDados] = useState<SensorData[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedChart, setSelectedChart] = useState<ChartInfo | null>(null);
+
+  const MAX_DADOS = 7;
+
+  const sanitize = (arr: number[]) => arr.map((v) => (isFinite(v) ? v : 0));
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const novoDado = Array.isArray(data) ? data : [data];
+
+      setDados((prev) => {
+        const combinado = [...prev, ...novoDado];
+        return combinado.slice(-MAX_DADOS);
+      });
+    } catch (err) {
+      console.error("Erro ao buscar sensores", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        const res = await fetch(`${API_URL}/sensores/historico?horas=24`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (!res.ok) {
-          console.warn("API retornou erro:", res.status);
-          setDados([]);
-          return;
-        }
-
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          console.warn("Resposta inesperada da API");
-          setDados([]);
-          return;
-        }
-
-        setDados(data);
-      } catch (err) {
-        console.error("Erro ao buscar sensores", err);
-        setDados([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchData();
-    const interval = setInterval(fetchData, 15000);
+    const interval = setInterval(fetchData, 2000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading)
     return (
-      <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
+      <ActivityIndicator
+        size="large"
+        color="#2196F3"
+        style={{ marginTop: 50 }}
+      />
     );
 
-  if (!dados.length) {
+  if (!dados.length)
     return (
       <View style={{ marginTop: 50, alignItems: "center" }}>
         <Text style={{ color: "#999" }}>Nenhum dado disponível ainda.</Text>
       </View>
     );
-  }
-
-  const sanitize = (arr: number[]) =>
-    arr.map((v) => (isFinite(v) ? v : 0));
 
   const labels = dados.map((d) => new Date(d.timestamp).getHours() + "h");
-  const umidade = sanitize(dados.map((d) => d.umidadeSolo));
-  const luminosidade = sanitize(dados.map((d) => d.luminosidade));
-  const tempSolo = sanitize(dados.map((d) => d.tempSolo));
-  const tempAr = sanitize(dados.map((d) => d.tempAr));
+  const umidade = sanitize(dados.map((d) => d.umidadeSolo ?? 0));
+  const luminosidade = sanitize(dados.map((d) => d.luminosidade ?? 0));
+  const temperaturaAr = sanitize(dados.map((d) => d.temperaturaAr ?? 0));
+  const umidadeAr = sanitize(dados.map((d) => d.umidadeAr ?? 0));
 
   const chartConfig = {
     backgroundGradientFrom: "#fff",
@@ -97,84 +97,123 @@ export default function RelatorioGraficos() {
     propsForDots: { r: "4", strokeWidth: "1", stroke: "#1b5e20" },
   };
 
+  const openModal = (label: string, data: number[], color: string) => {
+    setSelectedChart({ label, data: sanitize(data), color });
+    setModalVisible(true);
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      {...(Platform.OS === "web" ? { onStartShouldSetResponder: undefined } : {})}
+    >
       <Text style={styles.header}>RELATÓRIO DE GRÁFICOS</Text>
 
-      {/* Umidade do solo */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <MaterialCommunityIcons name="water-percent" size={20} color="#1b5e20" />
-          <Text style={styles.cardTitle}>Umidade do Solo</Text>
+      {/* Umidade do Solo */}
+      <TouchableOpacity onPress={() => openModal("Umidade do Solo", umidade, "#1b5e20")}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <MaterialCommunityIcons name="water-percent" size={20} color="#1b5e20" />
+            <Text style={styles.cardTitle}>Umidade do Solo</Text>
+          </View>
+          <Text style={styles.cardSubtitle}>Últimos 7 registros (%)</Text>
+          <LineChart
+            data={{ labels, datasets: [{ data: umidade }] }}
+            width={screenWidth - 40}
+            height={220}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            fromZero
+          />
         </View>
-        <Text style={styles.cardSubtitle}>Últimas 24 horas (%)</Text>
-        <LineChart
-          data={{ labels, datasets: [{ data: umidade }] }}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-        />
-      </View>
+      </TouchableOpacity>
 
       {/* Luminosidade */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Feather name="sun" size={20} color="#1b5e20" />
-          <Text style={styles.cardTitle}>Luminosidade</Text>
+      <TouchableOpacity onPress={() => openModal("Luminosidade", luminosidade, "#ff9800")}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Feather name="sun" size={20} color="#1b5e20" />
+            <Text style={styles.cardTitle}>Luminosidade</Text>
+          </View>
+          <Text style={styles.cardSubtitle}>Últimos 7 registros (lux)</Text>
+          <LineChart
+            data={{ labels, datasets: [{ data: luminosidade }] }}
+            width={screenWidth - 40}
+            height={220}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            fromZero
+          />
         </View>
-        <Text style={styles.cardSubtitle}>Últimas 24 horas (lux)</Text>
-        <LineChart
-          data={{ labels, datasets: [{ data: luminosidade }] }}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-        />
-      </View>
+      </TouchableOpacity>
 
-      {/* Temperatura do Solo */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <FontAwesome5 name="seedling" size={18} color="#1b5e20" />
-          <Text style={styles.cardTitle}>Temperatura do Solo</Text>
+      {/* Temperatura do Ar */}
+      <TouchableOpacity onPress={() => openModal("Temperatura do Ar", temperaturaAr, "#ff6347")}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Feather name="thermometer" size={20} color="#1b5e20" />
+            <Text style={styles.cardTitle}>Temperatura do Ar</Text>
+          </View>
+          <Text style={styles.cardSubtitle}>Últimos 7 registros (°C)</Text>
+          <LineChart
+            data={{ labels, datasets: [{ data: temperaturaAr, color: () => "#ff6347" }] }}
+            width={screenWidth - 40}
+            height={220}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            fromZero
+          />
         </View>
-        <Text style={styles.cardSubtitle}>Últimas 24 horas (°C)</Text>
-        <LineChart
-          data={{ labels, datasets: [{ data: tempSolo }] }}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-        />
-      </View>
+      </TouchableOpacity>
 
-      {/* Temperatura e Umidade do Ar */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Feather name="thermometer" size={20} color="#1b5e20" />
-          <Text style={styles.cardTitle}>Temperatura e Umidade do Ar</Text>
+      {/* Umidade do Ar */}
+      <TouchableOpacity onPress={() => openModal("Umidade do Ar", umidadeAr, "#1e88e5")}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Feather name="droplet" size={20} color="#1b5e20" />
+            <Text style={styles.cardTitle}>Umidade do Ar</Text>
+          </View>
+          <Text style={styles.cardSubtitle}>Últimos 7 registros (%)</Text>
+          <LineChart
+            data={{ labels, datasets: [{ data: umidadeAr, color: () => "#1e88e5" }] }}
+            width={screenWidth - 40}
+            height={220}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chart}
+            fromZero
+          />
         </View>
-        <Text style={styles.cardSubtitle}>Últimas 24 horas</Text>
-        <LineChart
-          data={{
-            labels,
-            datasets: [
-              { data: tempAr, color: () => "rgba(255, 99, 71, 1)" },
-              { data: umidade, color: () => "rgba(30, 136, 229, 1)" },
-            ],
-            legend: ["Temperatura do Ar (°C)", "Umidade do Solo (%)"],
-          }}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-        />
-      </View>
+      </TouchableOpacity>
+
+      {/* Modal Expandido */}
+      <Modal visible={modalVisible} animationType="slide">
+        <View style={styles.modalContainer}>
+          {selectedChart && (
+            <>
+              <Text style={styles.modalTitle}>{selectedChart.label}</Text>
+              <LineChart
+                data={{ labels, datasets: [{ data: selectedChart.data, color: () => selectedChart.color }] }}
+                width={screenWidth}
+                height={400}
+                chartConfig={chartConfig}
+                bezier
+                style={styles.chart}
+                fromZero
+              />
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>Fechar</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -208,4 +247,8 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: "bold", color: "#1b5e20", marginLeft: 6 },
   cardSubtitle: { fontSize: 12, color: "#555", marginBottom: 8 },
   chart: { borderRadius: 12 },
+  modalContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff", padding: 10 },
+  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  closeButton: { marginTop: 20, padding: 10, backgroundColor: "#1b5e20", borderRadius: 8 },
+  closeButtonText: { color: "#fff", fontWeight: "bold" },
 });
