@@ -17,8 +17,11 @@ import {
   Feather,
 } from "@expo/vector-icons";
 
+// ===== CONFIGURAÇÃO DAS APIs =====
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
+const SENSOR_API = "http://10.92.199.19:3000/data"; // <-- rota do ESP32
 
+// ===== TIPO DO USUÁRIO =====
 interface Usuario {
   id?: string;
   nome?: string;
@@ -32,23 +35,26 @@ interface Usuario {
   ultimaAtualizacao?: string;
 }
 
+// ===== COMPONENTE PRINCIPAL =====
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Usuario>({});
   const [sensores, setSensores] = useState({
-    umidadeSolo: null,
-    luminosidade: null,
-    tempSolo: null,
-    tempAr: null,
+    umidadeSolo: null as number | null,
+    luminosidade: null as number | null,
+    tempSolo: null as number | null,
+    tempAr: null as number | null,
+    umidadeAr: null as number | null,
   });
 
-  const [dataInicial, setDataInicial] = useState('');
-  const [dataFinal, setDataFinal] = useState('');
-  const [parametro, setParametro] = useState('todos');
+  const [dataInicial, setDataInicial] = useState("");
+  const [dataFinal, setDataFinal] = useState("");
+  const [parametro, setParametro] = useState("todos");
   const [relatorio, setRelatorio] = useState<any[]>([]);
 
+  // ===== BUSCA DE DADOS DO USUÁRIO =====
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -65,14 +71,8 @@ export default function Home() {
         const userData = await resUser.json();
         setUsuario(userData);
         setFormData(userData);
-
-        const resSensores = await fetch(`${API_URL}/sensores`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const sensoresData = await resSensores.json();
-        setSensores(sensoresData);
       } catch (err) {
-        console.error("Erro ao buscar dados:", err);
+        console.error("Erro ao buscar perfil:", err);
       } finally {
         setLoading(false);
       }
@@ -81,10 +81,36 @@ export default function Home() {
     fetchData();
   }, []);
 
+  // ===== FUNÇÃO PARA BUSCAR DADOS DOS SENSORES (ESP32) =====
+  const fetchSensores = async () => {
+    try {
+      const res = await fetch(SENSOR_API);
+      const data = await res.json();
+      setSensores({
+        umidadeSolo: data.umidadeSolo ?? null,
+        luminosidade: data.luminosidade ?? null,
+        tempSolo: data.temperaturaSolo ?? null,
+        tempAr: data.temperaturaAr ?? null,
+        umidadeAr: data.umidadeAr ?? null,
+      });
+    } catch (err) {
+      console.error("Erro ao buscar sensores:", err);
+    }
+  };
+
+  // ===== ATUALIZA AUTOMATICAMENTE OS SENSORES =====
+  useEffect(() => {
+    fetchSensores(); // primeira atualização
+    const interval = setInterval(fetchSensores, 2000); // atualiza a cada 2s
+    return () => clearInterval(interval);
+  }, []);
+
+  // ===== MANIPULAÇÃO DE CAMPOS =====
   const handleChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ===== SALVAR PERFIL =====
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -112,18 +138,19 @@ export default function Home() {
     }
   };
 
+  // ===== GERAR RELATÓRIO (opcional, se tiver backend configurado) =====
   const gerarRelatorio = async () => {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem("token");
     if (!token) {
-      Alert.alert('Erro', 'Token não encontrado.');
+      Alert.alert("Erro", "Token não encontrado.");
       return;
     }
 
     try {
-      const res = await fetch(`${API_URL}/sensores/relatorio`, {
-        method: 'POST',
+      const res = await fetch(`${API_URL}/sensores`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -135,27 +162,30 @@ export default function Home() {
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error('Erro ao gerar relatório:', res.status, errorText);
-        Alert.alert('Erro', 'Não foi possível gerar o relatório.');
+        console.error("Erro ao gerar relatório:", res.status, errorText);
+        Alert.alert("Erro", "Não foi possível gerar o relatório.");
         return;
       }
 
       const dados = await res.json();
       setRelatorio(dados);
-      Alert.alert('Relatório gerado com sucesso!');
+      Alert.alert("Relatório gerado com sucesso!");
     } catch (error) {
-      console.error('Erro ao buscar relatório:', error);
-      Alert.alert('Erro', 'Falha na comunicação com o servidor.');
+      console.error("Erro ao buscar relatório:", error);
+      Alert.alert("Erro", "Falha na comunicação com o servidor.");
     }
   };
 
+  // ===== LOADING =====
   if (loading)
     return (
       <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
     );
 
+  // ===== RENDERIZAÇÃO =====
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* ===== CABEÇALHO ===== */}
       <View style={styles.header}>
         <Image
           source={usuario?.foto ? { uri: usuario.foto } : undefined}
@@ -168,6 +198,7 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
+      {/* ===== INFORMAÇÕES ===== */}
       <View style={styles.infoRow}>
         <View style={styles.infoCol}>
           <Text style={styles.infoLabel}>Área Total</Text>
@@ -235,11 +266,11 @@ export default function Home() {
         </View>
       </View>
 
+      {/* ===== BOTÕES ===== */}
       <View style={styles.buttonRow}>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => setEditMode(false)}
-          disabled={!editMode}
+          onPress={gerarRelatorio}
         >
           <Text style={styles.actionButtonText}>Relatório Completo</Text>
         </TouchableOpacity>
@@ -258,6 +289,7 @@ export default function Home() {
         )}
       </View>
 
+      {/* ===== SENSOR CARDS ===== */}
       <View style={styles.sensoresGrid}>
         <View style={styles.sensorCard}>
           <MaterialCommunityIcons name="water-percent" size={24} color="#1b5e20" />
@@ -278,6 +310,9 @@ export default function Home() {
         <View style={styles.sensorCard}>
           <FontAwesome5 name="seedling" size={22} color="#1b5e20" />
           <Text style={styles.sensorLabel}>Temp. do Solo</Text>
+          <Text style={styles.sensorValue}>
+            {sensores.tempSolo !== null ? `${sensores.tempSolo}°` : "-"}
+          </Text>
         </View>
 
         <View style={styles.sensorCard}>
@@ -287,215 +322,66 @@ export default function Home() {
             {sensores.tempAr !== null ? `${sensores.tempAr}°` : "-"}
           </Text>
         </View>
-      </View>
 
-      {/* Gerador de Gráficos */}
-      <View style={styles.containerChart}>
-        <Text style={styles.textChart}>
-          Gerador de Gráficos
-        </Text>
-        <Text style={styles.subTextChart}>
-          Análise detalhada de dados ambientais por período
-        </Text>
-
-        <TextInput
-          style={styles.inputStyled}
-          placeholder="Data Inicial (dd/mm/aaaa)"
-          value={dataInicial}
-          onChangeText={setDataInicial}
-        />
-        <TextInput
-          style={styles.inputStyled}
-          placeholder="Data Final (dd/mm/aaaa)"
-          value={dataFinal}
-          onChangeText={setDataFinal}
-        />
-        <TextInput
-          style={styles.inputStyled}
-          placeholder="Parâmetro (ex: umidadeSolo, todos)"
-          value={parametro}
-          onChangeText={setParametro}
-        />
-
-        <TouchableOpacity style={styles.chartButton} onPress={gerarRelatorio}>
-          <Text style={styles.chartButtonText}>Gerar Relatório</Text>
-        </TouchableOpacity>
-
-        {relatorio.length > 0 && (
-          <View style={styles.containerReports}>
-            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#042b00', marginBottom: 8 }}>
-              Dados do Relatório:
-            </Text>
-            {relatorio.map((item, index) => (
-              <Text key={index} style={{ color: '#1b5e20', marginBottom: 4 }}>
-                {JSON.stringify(item)}
-              </Text>
-            ))}
-          </View>
-        )}
+        <View style={styles.sensorCard}>
+          <MaterialCommunityIcons name="air-humidifier" size={24} color="#1b5e20" />
+          <Text style={styles.sensorLabel}>Umidade do Ar</Text>
+          <Text style={styles.sensorValue}>
+            {sensores.umidadeAr !== null ? `${sensores.umidadeAr}%` : "-"}
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
 }
 
+// ===== ESTILOS =====
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    backgroundColor: '#fff',
-    padding: 18
-  },
-  header: {
-    alignItems: "center",
-    marginTop: 24
-  },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    marginBottom: 8
-  },
-  nome: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#042b00',
-    textAlign: 'center'
-  },
-  profissao: {
-    fontSize: 16,
-    color: '#1b5e20',
-    textAlign: 'center',
-    marginBottom: 4
-  },
+  container: { flexGrow: 1, backgroundColor: "#fff", padding: 18 },
+  header: { alignItems: "center", marginTop: 24 },
+  avatar: { width: 90, height: 90, borderRadius: 45, marginBottom: 8 },
+  nome: { fontSize: 22, fontWeight: "bold", color: "#042b00", textAlign: "center" },
+  profissao: { fontSize: 16, color: "#1b5e20", textAlign: "center", marginBottom: 4 },
   empresaButton: {
-    backgroundColor: '#1b5e20',
+    backgroundColor: "#1b5e20",
     borderRadius: 16,
     paddingVertical: 4,
     paddingHorizontal: 18,
-    alignSelf: 'center',
-    marginBottom: 12
+    alignSelf: "center",
+    marginBottom: 12,
   },
-  empresaButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4
-  },
-  infoCol: {
-    flex: 1,
-    alignItems: 'center'
-  },
-  infoLabel: {
-    fontSize: 13,
-    color: '#1b5e20'
-  },
-  infoValue: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#042b00'
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 12
-  },
+  empresaButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  infoRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+  infoCol: { flex: 1, alignItems: "center" },
+  infoLabel: { fontSize: 13, color: "#1b5e20" },
+  infoValue: { fontSize: 15, fontWeight: "bold", color: "#042b00" },
+  buttonRow: { flexDirection: "row", justifyContent: "center", marginVertical: 12 },
   actionButton: {
-    backgroundColor: '#fff',
-    borderColor: '#1b5e20',
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    marginHorizontal: 4
-  },
-  actionButtonText: {
-    color: '#1b5e20',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  chartButton: {
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderColor: '#1b5e20',
+    backgroundColor: "#fff",
+    borderColor: "#1b5e20",
     borderWidth: 1,
     borderRadius: 16,
     paddingVertical: 8,
     paddingHorizontal: 18,
     marginHorizontal: 4,
-    width: '50%',
-    alignItems: 'center'
   },
-  chartButtonText: {
-    color: '#1b5e20',
-    fontWeight: 'bold',
-    fontSize: 15,
-    alignItems: 'center'
-  },
+  actionButtonText: { color: "#1b5e20", fontWeight: "bold", fontSize: 15 },
   sensoresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     marginVertical: 18,
   },
   sensorCard: {
-    width: '47%',
-    backgroundColor: '#f5f5f5',
-    borderColor: '#1b5e20',
+    width: "47%",
+    backgroundColor: "#f5f5f5",
+    borderColor: "#1b5e20",
     borderWidth: 1,
     borderRadius: 18,
-    alignItems: 'center',
+    alignItems: "center",
     padding: 12,
-    marginBottom: 12
-  },
-  sensorLabel: {
-    fontSize: 14,
-    color: '#1b5e20',
-    marginTop: 4
-  },
-  sensorValue: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#042b00',
-    marginTop: 2
-  },
-  containerChart: {
-    marginVertical: 20,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  textChart: {
-    fontSize: 30, 
-    fontWeight: 'bold', 
-    color: '#042b00', 
-    marginBottom: 8
-  },
-  subTextChart: {
-    fontSize: 14, 
-    color: '#1b5e20', 
-    marginBottom: 12
-  },
-  inputStyled: {
-    borderWidth: 1,
-    borderColor: '#1b5e20',
-    borderRadius: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
     marginBottom: 12,
-    backgroundColor: '#f5f5f5',
-    color: '#042b00',
-    fontSize: 15,
-    width: '90%'
   },
-  containerReports: {
-    marginTop: 20
-  },
-  reportingData: {
-    fontSize: 16, 
-    fontWeight: 'bold', 
-    color: '#042b00', 
-    marginBottom: 8
-  }
+  sensorLabel: { fontSize: 14, color: "#1b5e20", marginTop: 4 },
+  sensorValue: { fontSize: 22, fontWeight: "bold", color: "#042b00", marginTop: 2 },
 });

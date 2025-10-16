@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
 
@@ -67,21 +68,60 @@ export default function Perfil() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert('Permissão negada', 'Você precisa permitir acesso à galeria.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      const selectedImage = result.assets[0];
+      setFormData((prev) => ({ ...prev, foto: selectedImage.uri }));
+    }
+  };
+
   const handleSave = async () => {
     const token = await AsyncStorage.getItem('token');
     if (!token || !usuario?.id) {
       Alert.alert('Erro', 'Token ou ID do usuário não encontrado.');
       return;
     }
+
     try {
+      const form = new FormData();
+      form.append('nome', formData.nome);
+      form.append('email', formData.email);
+      form.append('profissao', formData.profissao);
+      form.append('empresa', formData.empresa);
+
+      if (formData.foto && formData.foto.startsWith('file://')) {
+        const filename = formData.foto.split('/').pop();
+        const match = /\.(\w+)$/.exec(filename ?? '');
+        const type = match ? `image/${match[1]}` : `image`;
+
+        form.append('foto', {
+          uri: formData.foto,
+          name: filename,
+          type,
+        } as any);
+      }
+
       const res = await fetch(`${API_URL}/atualizarPerfil`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
-        body: JSON.stringify(formData),
+        body: form,
       });
+
       if (!res.ok) throw new Error('Erro ao atualizar perfil.');
       const data: Usuario = await res.json();
       setUsuario(data);
@@ -101,22 +141,7 @@ export default function Perfil() {
       <View style={styles.avatarContainer}>
         <Image style={styles.avatar} source={formData.foto ? { uri: formData.foto } : undefined} />
         {editMode && (
-          <TouchableOpacity style={styles.updateButton} onPress={async () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = async (e: any) => {
-              const file = e.target.files[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                  setFormData((prev) => ({ ...prev, foto: reader.result as string }));
-                };
-                reader.readAsDataURL(file);
-              }
-            };
-            input.click();
-          }}>
+          <TouchableOpacity style={styles.updateButton} onPress={pickImage}>
             <Text style={styles.updateButtonText}>Selecionar foto</Text>
           </TouchableOpacity>
         )}
@@ -161,15 +186,6 @@ export default function Perfil() {
                 value={formData.empresa}
                 onChangeText={(text) => handleChange('empresa', text)}
                 placeholder="Empresa"
-              />
-            </View>
-            <View style={styles.inputIconContainer}>
-              <MaterialCommunityIcons name="image-outline" size={22} color="#1b5e20" style={styles.inputIcon} />
-              <TextInput
-                style={styles.inputStyledWithIcon}
-                value={formData.foto}
-                onChangeText={(text) => handleChange('foto', text)}
-                placeholder="URL da foto (opcional)"
               />
             </View>
           </View>
@@ -218,7 +234,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-  avatarContainer: {
+    avatarContainer: {
     alignItems: 'center',
     marginTop: 40,
     marginBottom: 20,
@@ -251,16 +267,6 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 8,
-  },
-  inputStyled: {
-    borderWidth: 1,
-    borderColor: '#1b5e20',
-    borderRadius: 20,
-    padding: 12,
-    marginBottom: 12,
-    backgroundColor: '#f5f5f5',
-    fontSize: 16,
-    color: '#042b00',
   },
   inputStyledWithIcon: {
     flex: 1,
