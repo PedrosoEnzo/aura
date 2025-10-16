@@ -308,14 +308,6 @@ export default function Home() {
         </View>
 
         <View style={styles.sensorCard}>
-          <FontAwesome5 name="seedling" size={22} color="#1b5e20" />
-          <Text style={styles.sensorLabel}>Temp. do Solo</Text>
-          <Text style={styles.sensorValue}>
-            {sensores.tempSolo !== null ? `${sensores.tempSolo}°` : "-"}
-          </Text>
-        </View>
-
-        <View style={styles.sensorCard}>
           <Feather name="thermometer" size={24} color="#1b5e20" />
           <Text style={styles.sensorLabel}>Temp. do Ar</Text>
           <Text style={styles.sensorValue}>
