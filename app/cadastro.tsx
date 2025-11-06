@@ -9,13 +9,10 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
-//Erro 500
-
-// URL pública do backend
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
 
 export default function CadastroWeb() {
@@ -26,6 +23,7 @@ export default function CadastroWeb() {
   const [profissao, setProfissao] = useState("");
   const [empresa, setEmpresa] = useState("");
   const [foco, setFoco] = useState("");
+  const [carregando, setCarregando] = useState(false);
   const router = useRouter();
 
   const handleCadastro = async () => {
@@ -34,14 +32,19 @@ export default function CadastroWeb() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Erro", "Digite um e-mail válido.");
+      return;
+    }
+
     if (senha !== confirmarSenha) {
       Alert.alert("Erro", "As senhas não coincidem.");
       return;
     }
 
+    setCarregando(true);
     try {
-      console.log("Enviando dados para backend:", { nome, email, senha, profissao, empresa });
-
       const response = await fetch(`${API_URL}/cadastro`, {
         method: "POST",
         headers: {
@@ -50,33 +53,24 @@ export default function CadastroWeb() {
         body: JSON.stringify({ nome, email, senha, profissao, empresa }),
       });
 
-      // Para Web, checar se a resposta não é um HTML (erro de CORS)
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("Resposta do backend não é JSON:", text);
-        Alert.alert("Erro", "Falha ao se conectar com o servidor (CORS?)");
-        return;
-      }
+      const result = await response.json();
 
       if (!response.ok) {
-        Alert.alert("Erro", data.erro || "Erro desconhecido");
-        return;
+        throw new Error(result.erro || "Erro ao cadastrar");
       }
 
-      if (data.usuario?.id && data.token) {
-        await AsyncStorage.setItem("token", data.token);
-        await AsyncStorage.setItem("usuarioId", String(data.usuario.id));
-        Alert.alert("Sucesso", "Cadastro realizado!");
-        router.push("/home");
-      } else {
-        Alert.alert("Erro", "Não foi possível cadastrar.");
-      }
+      await AsyncStorage.setItem("token", result.token);
+      await AsyncStorage.setItem("usuarioId", String(result.usuario.id));
+      Alert.alert("Sucesso", "Cadastro realizado!");
+      router.push("/cadastroDisp");
     } catch (error) {
       console.error("Erro no cadastro:", error);
-      Alert.alert("Erro", error instanceof Error ? error.message : "Falha no servidor");
+      Alert.alert(
+        "Erro no Cadastro",
+        error instanceof Error ? error.message : "Erro desconhecido ao tentar cadastrar"
+      );
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -99,8 +93,12 @@ export default function CadastroWeb() {
         </View>
 
         <View style={styles.containerBotao}>
-          <TouchableOpacity style={styles.botao} onPress={handleCadastro}>
-            <Text style={styles.textoBotao}>Cadastrar</Text>
+          <TouchableOpacity style={styles.botao} onPress={handleCadastro} disabled={carregando}>
+            {carregando ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.textoBotao}>Cadastrar</Text>
+            )}
           </TouchableOpacity>
           <Text style={styles.botaoCadastro}>
             Já possui conta?
@@ -120,10 +118,40 @@ const styles = StyleSheet.create({
   corpo: { justifyContent: "center", alignItems: "center" },
   textoPrincipal: { fontSize: 24, fontWeight: "bold", color: "#042b00", marginLeft: 65, paddingBottom: 15 },
   containerInput: { justifyContent: "center", alignItems: "center" },
-  inputs: { borderWidth: 1, marginBottom: 15, width: 300, height: 45, borderRadius: 20, paddingLeft: 20, color: "#042b00", fontWeight: "500", borderColor: "#042b00", backgroundColor: "#f5f5f5" },
-  inputFocado: { borderColor: "#00a859", borderWidth: 2, shadowColor: "#00a859", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3 },
+  inputs: {
+    borderWidth: 1,
+    marginBottom: 15,
+    width: 300,
+    height: 45,
+    borderRadius: 20,
+    paddingLeft: 20,
+    color: "#042b00",
+    fontWeight: "500",
+    borderColor: "#042b00",
+    backgroundColor: "#f5f5f5",
+  },
+  inputFocado: {
+    borderColor: "#00a859",
+    borderWidth: 2,
+    shadowColor: "#00a859",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   containerBotao: { justifyContent: "center", alignItems: "center" },
-  botao: { justifyContent: "center", alignItems: "center", borderWidth: 1, borderColor: "#042b00", marginBottom: 15, marginTop: 25, width: 200, height: 45, borderRadius: 20, backgroundColor: "#042b00" },
+  botao: {
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#042b00",
+    marginBottom: 15,
+    marginTop: 25,
+    width: 200,
+    height: 45,
+    borderRadius: 20,
+    backgroundColor: "#042b00",
+  },
   textoBotao: { color: "#fff", fontSize: 18, fontWeight: "600" },
   botaoCadastro: { fontSize: 12, color: "#042b00" },
   botaoCadastro2: { fontWeight: "bold", color: "#042b00" },

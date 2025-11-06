@@ -17,7 +17,7 @@ import {
 import { LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
-const API_URL = "http://10.92.199.19:3000/data"; // Rota do ESP32
+const API_URL = "https://aura-back-app.onrender.com/api/sensores"; // Rota do ESP32
 
 interface SensorData {
   timestamp: string;

@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 
 // URL pública da API
-const API_URL = 'https://aura-back-app.onrender.com/api/auth';
+const API_URL = 'https://aura-back-app.onrender.com/api/dispositivo';
 
 export default function CadastroDispositivo() {
   const [deviceId, setDeviceId] = useState('');
@@ -42,7 +42,7 @@ export default function CadastroDispositivo() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/dispositivos`, {
+      const res = await fetch(`${API_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

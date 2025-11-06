@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Image,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
-const API_URL = "https://aura-back-app.onrender.com/api/auth";
+const API_URL = 'https://aura-back-app.onrender.com/api/auth';
 
 interface Usuario {
   id: string;
@@ -28,15 +38,22 @@ export default function Perfil() {
   });
   const [loading, setLoading] = useState(true);
 
+  // ===================== BUSCAR PERFIL =====================
   useEffect(() => {
     async function fetchPerfil() {
       setLoading(true);
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        setUsuario({ id: '', nome: '', email: '', erro: 'Token não encontrado. Faça login novamente.' });
+        setUsuario({
+          id: '',
+          nome: '',
+          email: '',
+          erro: 'Token não encontrado. Faça login novamente.',
+        });
         setLoading(false);
         return;
       }
+
       try {
         const res = await fetch(`${API_URL}/perfil`, {
           method: 'GET',
@@ -56,7 +73,12 @@ export default function Perfil() {
           foto: data.foto || '',
         });
       } catch (error) {
-        setUsuario({ id: '', nome: '', email: '', erro: 'Não foi possível carregar os dados.' });
+        setUsuario({
+          id: '',
+          nome: '',
+          email: '',
+          erro: 'Não foi possível carregar os dados.',
+        });
       } finally {
         setLoading(false);
       }
@@ -64,10 +86,12 @@ export default function Perfil() {
     fetchPerfil();
   }, []);
 
+  // ===================== ATUALIZA CAMPOS =====================
   const handleChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ===================== SELECIONAR IMAGEM =====================
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -87,6 +111,7 @@ export default function Perfil() {
     }
   };
 
+  // ===================== SALVAR PERFIL =====================
   const handleSave = async () => {
     const token = await AsyncStorage.getItem('token');
     if (!token || !usuario?.id) {
@@ -101,10 +126,11 @@ export default function Perfil() {
       form.append('profissao', formData.profissao);
       form.append('empresa', formData.empresa);
 
+      // Se tiver uma imagem nova, adiciona
       if (formData.foto && formData.foto.startsWith('file://')) {
-        const filename = formData.foto.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename ?? '');
-        const type = match ? `image/${match[1]}` : `image`;
+        const filename = formData.foto.split('/').pop() || 'foto.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : `image/jpeg`;
 
         form.append('foto', {
           uri: formData.foto,
@@ -117,37 +143,55 @@ export default function Perfil() {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
         },
         body: form,
       });
 
-      if (!res.ok) throw new Error('Erro ao atualizar perfil.');
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Erro ao atualizar perfil: ${res.status} - ${errText}`);
+      }
+
       const data: Usuario = await res.json();
       setUsuario(data);
+      setFormData({
+        nome: data.nome || '',
+        email: data.email || '',
+        profissao: data.profissao || '',
+        empresa: data.empresa || '',
+        foto: data.foto || '',
+      });
       setEditMode(false);
-      Alert.alert('Sucesso', 'Perfil atualizado!');
+      Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
     } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
       Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
     }
   };
 
+  // ===================== LOADING =====================
   if (loading) {
     return <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />;
   }
 
+  // ===================== RENDERIZAÇÃO =====================
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.avatarContainer}>
-        <Image style={styles.avatar} source={formData.foto ? { uri: formData.foto } : undefined} />
+        <Image
+          style={styles.avatar}
+          source={formData.foto ? { uri: formData.foto } : require('../../assets/images/avatar-placeholder.png')}
+        />
         {editMode && (
           <TouchableOpacity style={styles.updateButton} onPress={pickImage}>
             <Text style={styles.updateButtonText}>Selecionar foto</Text>
           </TouchableOpacity>
         )}
       </View>
+
       <View style={{ height: 80 }} />
       <Text style={styles.title}>Atualize e edite seus dados:</Text>
+
       {editMode ? (
         <>
           <View style={styles.section}>
@@ -160,6 +204,7 @@ export default function Perfil() {
                 placeholder="Nome"
               />
             </View>
+
             <View style={styles.inputIconContainer}>
               <MaterialCommunityIcons name="email-outline" size={22} color="#1b5e20" style={styles.inputIcon} />
               <TextInput
@@ -170,6 +215,7 @@ export default function Perfil() {
                 keyboardType="email-address"
               />
             </View>
+
             <View style={styles.inputIconContainer}>
               <FontAwesome5 name="seedling" size={20} color="#1b5e20" style={styles.inputIcon} />
               <TextInput
@@ -179,6 +225,7 @@ export default function Perfil() {
                 placeholder="Profissão"
               />
             </View>
+
             <View style={styles.inputIconContainer}>
               <Feather name="briefcase" size={22} color="#1b5e20" style={styles.inputIcon} />
               <TextInput
@@ -189,11 +236,15 @@ export default function Perfil() {
               />
             </View>
           </View>
+
           <View style={styles.buttonGroup}>
             <TouchableOpacity style={[styles.updateButton, { marginRight: 10 }]} onPress={handleSave}>
               <Text style={styles.updateButtonText}>Salvar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.updateButton, { backgroundColor: '#f44336' }]} onPress={() => setEditMode(false)}>
+            <TouchableOpacity
+              style={[styles.updateButton, { backgroundColor: '#f44336' }]}
+              onPress={() => setEditMode(false)}
+            >
               <Text style={styles.updateButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
@@ -205,19 +256,23 @@ export default function Perfil() {
               <MaterialCommunityIcons name="account-outline" size={22} color="#1b5e20" style={styles.inputIcon} />
               <Text style={styles.inputStyledWithIcon}>{formData.nome}</Text>
             </View>
+
             <View style={styles.inputIconContainer}>
               <MaterialCommunityIcons name="email-outline" size={22} color="#1b5e20" style={styles.inputIcon} />
               <Text style={styles.inputStyledWithIcon}>{formData.email}</Text>
             </View>
+
             <View style={styles.inputIconContainer}>
               <Feather name="briefcase" size={22} color="#1b5e20" style={styles.inputIcon} />
               <Text style={styles.inputStyledWithIcon}>{formData.profissao}</Text>
             </View>
+
             <View style={styles.inputIconContainer}>
               <FontAwesome5 name="seedling" size={20} color="#1b5e20" style={styles.inputIcon} />
               <Text style={styles.inputStyledWithIcon}>{formData.empresa}</Text>
             </View>
           </View>
+
           <TouchableOpacity style={styles.updateButton} onPress={() => setEditMode(true)}>
             <Text style={styles.updateButtonText}>Editar</Text>
           </TouchableOpacity>
@@ -227,6 +282,7 @@ export default function Perfil() {
   );
 }
 
+// ===================== ESTILOS =====================
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
@@ -234,7 +290,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
   },
-    avatarContainer: {
+  avatarContainer: {
     alignItems: 'center',
     marginTop: 40,
     marginBottom: 20,

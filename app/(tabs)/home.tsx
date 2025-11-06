@@ -19,7 +19,7 @@ import {
 
 // ===== CONFIGURAÇÃO DAS APIs =====
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
-const SENSOR_API = "http://10.92.199.19:3000/data"; // <-- rota do ESP32
+const SENSOR_API = "https://aura-back-app.onrender.com/api/sensores"; // <-- rota do ESP32
 
 // ===== TIPO DO USUÁRIO =====
 interface Usuario {
@@ -101,7 +101,7 @@ export default function Home() {
   // ===== ATUALIZA AUTOMATICAMENTE OS SENSORES =====
   useEffect(() => {
     fetchSensores(); // primeira atualização
-    const interval = setInterval(fetchSensores, 2000); // atualiza a cada 2s
+    const interval = setInterval(fetchSensores, 3600000); // atualiza a cada 1h
     return () => clearInterval(interval);
   }, []);
 
