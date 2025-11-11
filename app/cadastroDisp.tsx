@@ -11,7 +11,7 @@ import {
   View
 } from 'react-native';
 
-// URL pública da API
+// ✅ URL correta da API (no plural)
 const API_URL = 'https://aura-back-app.onrender.com/api/dispositivo';
 
 export default function CadastroDispositivo() {
@@ -42,7 +42,7 @@ export default function CadastroDispositivo() {
     }
 
     try {
-      const res = await fetch(`${API_URL}`, {
+      const res = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,16 +58,18 @@ export default function CadastroDispositivo() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert('Sucesso', 'Dispositivo cadastrado!', [
+        Alert.alert('Sucesso', 'Dispositivo cadastrado com sucesso!', [
           {
             text: 'OK',
             onPress: () => router.push('/home'),
           },
         ]);
       } else {
+        console.error('Erro do servidor:', data);
         Alert.alert('Erro', data.erro || 'Não foi possível cadastrar o dispositivo.');
       }
     } catch (error) {
+      console.error('Erro de rede:', error);
       Alert.alert('Erro', 'Falha na conexão com o servidor.');
     }
   };
@@ -75,7 +77,10 @@ export default function CadastroDispositivo() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image source={require('../assets/images/auone.png')} style={{ width: 300, height: 200 }} />
+        <Image
+          source={require('../assets/images/auone.png')}
+          style={{ width: 300, height: 200 }}
+        />
       </View>
       <Text style={styles.titulo}>Cadastrar Dispositivo</Text>
       <TextInput
@@ -96,15 +101,15 @@ export default function CadastroDispositivo() {
 
 const styles = StyleSheet.create({
   header: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
     justifyContent: 'center',
-    alignItems: "center"
+    alignItems: 'center',
   },
   titulo: {
     fontSize: 22,
@@ -129,9 +134,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     width: 200,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#042b00",
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#042b00',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
