@@ -1,27 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-// === ROTAS DE CORES OTIMIZADAS PARA MODERNIDADE E HARMONIA ===
+// Rotas de Cores
 const COLORS = {
-  // Cores Primárias (Mais escuras e vibrantes)
-  greenPrimary: '#3A8A4C', // Cor principal do tema
-  greenAccent: '#1ED760', // Para destaque (botões ativos)
-
-  // Cores Secundárias (Fundo e Bolhas)
-  background: '#F9F9F9', // Fundo mais limpo
-  assistantBubble: '#EBF4ED', // Bolha do assistente mais suave
-  userBubble: '#FFFFFF', // Bolha do usuário (Branco)
-
-  // Texto
-  textDark: '#262626', // Texto mais escuro
-  textSubtle: '#6B7280', // Texto mais sutil
-  
-  // Bordas e Separadores
-  borderLight: '#E5E7EB', // Borda sutil
-  grayInput: '#F5F5F5', // Fundo do input
+  greenDark: '#3A8A4C',
+  greenLight: '#e9e9e9ff',
+  greenAccent: '#1ED760',
+  textDark: '#333333',
+  textSubtle: '#555555',
+  borderLight: '#E0E0E0',
   white: '#FFFFFF',
+  grayBackground: '#F5F5F5',
+  grayInput: '#F0F0F0',
+  grayText: '#a09e9eff',
 };
 
-// --- Dados Mockados (Mantidos) ---
+// Configuração da URL da API hospedada no Render
+
+const RENDER_API_URL = "https://aura-back-app.onrender.com/api/chat/chatService"; 
+
+
+// --- Dados Mockados ---
 const initialSuggestions = [
   {
     id: '1',
@@ -49,36 +47,75 @@ const initialMessages = [
   },
 ];
 
-// --- Componente: Icon (Usando SVGs Inline - Incluindo 'sparkle') ---
+// --- Componente: Icon (Usando SVGs Inline) ---
 const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) => {
   const getSvgPath = (name) => {
     switch (name) {
-      // ... (Outros ícones mantidos, mas omitidos para brevidade) ...
-
+      case 'leaf':
+        return (
+          <path fill="currentColor" d="M16 21l-3 1-4-2.5-4 2.5v-3.82c0-.39-.15-.76-.41-1.04L2 13.5l4-4.5h-.73a.27.27 0 01-.15-.5L5.7 7.7a.27.27 0 01.4-.04l1.6 1.74 3.56-3.9a.27.27 0 01.37 0L14.7 6.4a.27.27 0 010 .37L13 9l3 3h.71a.27.27 0 01.19.08l.94.94a.27.27 0 01-.03.37L16 16.5l3.86 2.87c.28.2.22.61-.13.75L16 21z" />
+        );
+      case 'sun':
+        return (
+          <>
+            <circle cx="12" cy="12" r="4" fill="currentColor" />
+            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
+          </>
+        );
+      case 'bug':
+        return (
+          <>
+            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 13v2M6 13v2M10 20h4M4 19l-1 2m18-2l1 2" />
+            <path fill="currentColor" d="M14 6H10c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h4c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" />
+            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 12v3c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3M16 12v3c0 2.21 1.79 4 4 4s4-1.79 4-4v-3" />
+          </>
+        );
+      case 'sprinkler':
+        return (
+          <path fill="currentColor" d="M12 2.69l5.66 5.66a8 8 0 11-11.32 0L12 2.69z" />
+        );
       case 'send':
         return (
           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
         );
 
-      // NOVO ÍCONE DE BRILHO (SPARKLE)
+
+
       case 'sparkle': 
         return (
-          <path 
+          <path
             fill="none" 
             stroke="currentColor" 
             strokeLinecap="round" 
             strokeLinejoin="round" 
-            strokeWidth="1.5" 
-            d="M10 20c.34-.64.55-1.35.63-2.07c.06-.5-.38-.93-.86-.93H5.5a1.5 1.5 0 01-1.5-1.5V11.5c0-.47-.42-.8-.92-.85c-.72-.08-1.42-.3-2.07-.63l-.7-.35a.5.5 0 010-.86l.35-.7c.64-.34 1.35-.55 2.07-.63c.5-.06.93-.38.93-.86V5.5a1.5 1.5 0 011.5-1.5h3.11c.47 0 .8.42.85.92c.08.72.3 1.42.63 2.07l.35.7a.5.5 0 01.86 0l.7-.35c.34-.64.55-1.35.63-2.07c.06-.5.38-.93.93-.93H18.5a1.5 1.5 0 011.5 1.5v3.11c0 .47.42.8.92.85c.72.08 1.42.3 2.07.63l.7.35a.5.5 0 010 .86l-.35.7c-.64.34-1.35.55-2.07.63c-.5.06-.93.38-.93.86V18.5a1.5 1.5 0 01-1.5 1.5h-3.11c-.47 0-.8-.42-.85-.92c-.08-.72-.3-1.42-.63-2.07l-.35-.7a.5.5 0 01-.86 0l-.7.35z" />
+            strokeWidth="2"
+            d="M12 4.25L13.75 6L15.5 4.25L17.25 6L15.5 7.75L17.25 9.5L15.5 11.25L13.75 9.5L12 11.25L10.25 9.5L8.5 11.25L6.75 9.5L8.5 7.75L6.75 6L8.5 4.25L10.25 6L12 4.25ZM20 18L21.5 19.5L20 21L18.5 19.5L20 18ZM4 18L5.5 19.5L4 21L2.5 19.5L4 18Z" 
           />
         );
+
+
+
 
       case 'chevron-right': // Para o chip do usuário
         return (
           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18l6-6-6-6" />
         );
-      
-      // ... (Outros ícones mantidos, mas omitidos para brevidade) ...
+      case 'home': // Ícone da barra de navegação
+        return (
+          <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+        );
+      case 'chart': // Ícone da barra de navegação
+        return (
+          <path fill="currentColor" d="M12 2L6 8v14h12V8z" />
+        );
+      case 'chat': // Ícone da barra de navegação
+        return (
+          <path fill="currentColor" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
+        );
+      case 'profile': // Ícone da barra de navegação
+        return (
+          <path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        );
       default:
         return null;
     }
@@ -88,7 +125,8 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
 
   if (!svgContent) return null;
 
-  const isStrokeIcon = ['sun', 'send', 'chevron-right', 'sparkle'].includes(name);
+  // Ajusta stroke e fill baseado no tipo de ícone para manter a consistência visual
+  const isStrokeIcon = ['sun', 'send', 'chevron-right'].includes(name);
 
   return (
     <svg
@@ -98,7 +136,7 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
       viewBox="0 0 24 24"
       fill={isStrokeIcon ? "none" : "currentColor"}
       stroke={isStrokeIcon ? "currentColor" : "none"}
-      strokeWidth={isStrokeIcon ? (name === 'sparkle' ? "1.5" : "2") : "0"} 
+      strokeWidth={isStrokeIcon ? "2" : "0"}
       style={{ color: color, ...style }}
     >
       {svgContent}
@@ -111,43 +149,49 @@ const MessageBubble = ({ text, sender }) => {
   const isAssistant = sender === 'assistant';
   const bubbleStyles = {
     padding: '12px 16px',
-    borderRadius: '20px', 
-    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)', 
+    borderRadius: '16px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.27)',
     maxWidth: '85%',
     marginBottom: '8px',
-    fontSize: '15px', 
+    fontSize: '14px',
     lineHeight: '20px',
     display: 'flex',
     alignItems: 'center',
+    borderBottom: isAssistant ? `1px solid ${COLORS.borderLight}` : 'none',
   };
 
   const containerStyles = {
     display: 'flex',
     justifyContent: isAssistant ? 'flex-start' : 'flex-end',
-    marginBottom: '6px',
-    paddingLeft: isAssistant ? '0' : '26px', 
+    marginBottom: '4px',
   };
 
   const assistantBubbleStyles = {
-    backgroundColor: COLORS.assistantBubble, 
+    backgroundColor: COLORS.greenLight,
     color: COLORS.textDark,
     marginRight: 'auto',
-    borderBottomLeftRadius: '4px', 
+    borderTopLeftRadius: '18px',
+    borderTopRightRadius: '16px',
+    borderBottomLeftRadius: '4px',
+    borderBottomRightRadius: '16px',
   };
 
   const userBubbleStyles = {
-    backgroundColor: COLORS.userBubble,
+    backgroundColor: COLORS.white,
     color: COLORS.textDark,
     marginLeft: 'auto',
-    borderBottomRightRadius: '4px', 
+    borderTopLeftRadius: '18px',
+    borderTopRightRadius: '16px',
+    borderBottomLeftRadius: '4px',
+    borderBottomRightRadius: '16px',
     border: `1px solid ${COLORS.borderLight}`,
   };
 
   return (
     <div style={containerStyles}>
       {isAssistant && (
-        <div style={{ alignSelf: 'flex-start', paddingRight: '8px', paddingTop: '4px' }}>
-          <Icon name="sparkle" size="24px" color={COLORS.greenPrimary} />
+        <div style={{ alignSelf: 'flex-end', paddingRight: '6px', paddingBottom: '2px' }}>
+          <Icon name="assistant" size="20px" color={COLORS.greenDark} />
         </div>
       )}
       <div style={{ ...bubbleStyles, ...(isAssistant ? assistantBubbleStyles : userBubbleStyles) }}>
@@ -158,14 +202,18 @@ const MessageBubble = ({ text, sender }) => {
 };
 
 // --- Componente: UserChip (Sugestão Clicada no Chat) ---
+
 const UserChip = ({ text }) => {
+  const gradientColors = '#429B69, #328F5E, #4BA06F';
   const gradientStyle = {
-    background: COLORS.greenPrimary, 
+    background: `linear-gradient(90deg, ${gradientColors})`,
     color: COLORS.white,
     border: 'none',
-    borderRadius: '20px',
-    borderBottomRightRadius: '4px', 
-    boxShadow: '0 2px 6px rgba(58, 138, 76, 0.3)', 
+    borderTopLeftRadius: '18px',
+    borderTopRightRadius: '16px',
+    borderBottomLeftRadius: '16px',
+    borderBottomRightRadius: '4px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.27)',
   };
 
   return (
@@ -179,8 +227,9 @@ const UserChip = ({ text }) => {
         cursor: 'default',
         ...gradientStyle
       }}>
-        <span style={{ fontWeight: '600', fontSize: '15px', marginRight: '6px' }}>{text}</span>
-        <Icon name="chevron-right" size="16px" color={COLORS.white} />
+        <span style={{ fontWeight: '600', fontSize: '14px', marginRight: '6px' }}>{text}</span>
+        {/* O ícone também deve ser branco para contraste */}
+        <Icon name="chevron-right" size="14px" color={COLORS.white} />
       </div>
     </div>
   );
@@ -195,10 +244,10 @@ const SuggestionItem = ({ item, onPress }) => (
       alignItems: 'center',
       backgroundColor: COLORS.white,
       padding: '16px', 
-      borderRadius: '14px', 
+      borderRadius: '20px',
       marginBottom: '10px', 
-      border: `1px solid ${COLORS.borderLight}`, 
-      boxShadow: '0 2px 8px rgba(0,0,0,0.05)', 
+      border: `1px solid ${COLORS.greenDark}`, 
+      boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
       cursor: 'pointer',
       width: '100%',
       textAlign: 'left',
@@ -206,11 +255,11 @@ const SuggestionItem = ({ item, onPress }) => (
       outline: 'none',
       justifyContent: 'space-between',
     }}
-    onMouseOver={(e) => e.currentTarget.style.backgroundColor = COLORS.grayInput}
+    onMouseOver={(e) => e.currentTarget.style.backgroundColor = COLORS.grayBackground}
     onMouseOut={(e) => e.currentTarget.style.backgroundColor = COLORS.white}
   >
     <span style={{ fontSize: '15px', color: COLORS.textDark, fontWeight: '500' }}>{item.text}</span>
-    <Icon name="chevron-right" size="18px" color={COLORS.greenPrimary} style={{ marginLeft: '10px' }} />
+    <Icon name="chevron-right" size="18px" color={COLORS.greenDark} style={{ marginLeft: '10px' }} />
   </button>
 );
 
@@ -230,19 +279,15 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
       style={{
         flex: 1,
         height: '48px',
-        backgroundColor: COLORS.grayInput, 
+        backgroundColor: COLORS.grayInput,
         borderRadius: '24px',
-        padding: '0 18px',
+        padding: '0 16px',
         marginRight: '10px',
         fontSize: '16px',
         color: COLORS.textDark,
-        border: 'none', 
+        border: `1px solid ${COLORS.borderLight}`,
         outline: 'none',
-        transition: 'box-shadow 0.2s',
-        boxShadow: `inset 0 0 0 1px ${COLORS.borderLight}`, 
       }}
-      onFocus={(e) => e.target.style.boxShadow = `inset 0 0 0 2px ${COLORS.greenPrimary}`}
-      onBlur={(e) => e.target.style.boxShadow = `inset 0 0 0 1px ${COLORS.borderLight}`}
       placeholder="Digite sua pergunta sobre agricultura..."
       value={value}
       onChange={e => onChangeText(e.target.value)}
@@ -252,13 +297,13 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
       onClick={onSend}
       disabled={!value.trim()}
       style={{
-        width: '48px', 
-        height: '48px', 
+        width: '44px',
+        height: '44px',
         borderRadius: '50%',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: value.trim() ? COLORS.greenPrimary : COLORS.borderLight, 
+        backgroundColor: value.trim() ? COLORS.greenDark : COLORS.borderLight,
         boxShadow: value.trim() ? '0 2px 8px rgba(58,138,76,0.3)' : 'none',
         transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
         cursor: value.trim() ? 'pointer' : 'not-allowed',
@@ -266,35 +311,38 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
         border: 'none',
       }}
     >
-      <Icon name="send" size="24px" color={COLORS.white} />
+      <Icon name="send" size="22px" color={COLORS.white} />
     </button>
   </div>
 );
 
-// --- Componente: NavigationBar (Mantido para estrutura, mas vazio) ---
+// --- Componente: NavigationBar 
 const NavigationBar = () => (
   <div style={{
     height: '38px',
     marginBottom: '30px',
     borderRadius: '30px',
     backgroundColor: 'transparent',
+
   }}>
   </div>
 );
 
 
-// --- Novo Componente: TypingIndicator (Usando 'sparkle') ---
+
+// --- Novo Componente: TypingIndicator ---
 const TypingIndicator = () => {
   const dotStyle = {
     width: '8px',
     height: '8px',
     borderRadius: '50%',
-    backgroundColor: COLORS.greenPrimary,
+    backgroundColor: COLORS.greenDark,
     margin: '0 2px',
     animation: 'dot-flashing 1s infinite alternate',
     display: 'inline-block',
   };
 
+  // Carregando a mensagem
   const Dot = ({ delay }) => (
     <span style={{
       ...dotStyle,
@@ -304,41 +352,41 @@ const TypingIndicator = () => {
 
   const typingBubbleStyle = {
     padding: '12px 16px',
-    borderRadius: '20px',
-    backgroundColor: COLORS.assistantBubble,
-    borderBottomLeftRadius: '4px',
+    borderRadius: '16px',
+    borderTopLeftRadius: '4px',
     maxWidth: 'fit-content',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-    marginLeft: '8px',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+    marginLeft: '6px',
   };
 
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px', marginTop: '4px' }}>
-      <div style={{ alignSelf: 'flex-start', paddingRight: '8px', paddingTop: '4px' }}>
-        <Icon name="sparkle" size="24px" color={COLORS.greenPrimary} />
+      <div style={{ alignSelf: 'flex-end', paddingRight: '6px', paddingBottom: '2px' }}>
+        <Icon name="assistant" size="20px" color={COLORS.greenDark} />
+        <style>
+          {`
+          @keyframes dot-flashing {
+            0% {
+              opacity: 0.3;
+              transform: translateY(0);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(-4px);
+            }
+          }
+        `}
+        </style>
       </div>
       <div style={typingBubbleStyle}>
+        {/* Animated dots container */}
         <div style={{ display: 'flex', alignItems: 'center', height: '10px' }}>
           <Dot delay="0s" />
           <Dot delay="0.2s" />
           <Dot delay="0.4s" />
         </div>
       </div>
-      {/* Styles for the animation */}
-      <style>
-        {`
-        @keyframes dot-flashing {
-          0% {
-            opacity: 0.3;
-            transform: translateY(0);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(-4px);
-          }
-        }
-      `}
-      </style>
+
     </div>
   );
 };
@@ -352,30 +400,35 @@ const App = () => {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef(null);
 
+  // Efeito para rolar automaticamente para o final
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
 
+  // Simula a resposta do assistente (usada após o envio/clique na sugestão)
   const simulateAssistantResponse = (query: string): void => {
     const responseText = `Entendi sua pergunta sobre "${query}". Esta é uma resposta simulada. Para implementar um chat real com IA, você pode usar a AI SDK da Vercel com modelos como GPT ou Claude.`;
 
     setIsTyping(true);
 
+
+    // Simula um pequeno delay para a resposta
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
         { id: `m${prev.length + 1}`, text: responseText, sender: 'assistant' },
       ]);
-      setIsTyping(false); 
+      setIsTyping(false); // Para a simulação de digitação
     }, 1500);
   };
 
   const handleSendMessage = (query = inputText) => {
     const trimmedQuery = query.trim();
-    if (!trimmedQuery || isTyping) return;
+    if (!trimmedQuery || isTyping) return; // Impede envio se estiver digitando
 
+    // 1. Adiciona a mensagem do usuário
     setMessages((prev) => [
       ...prev,
       { id: `u${prev.length + 1}`, text: trimmedQuery, sender: 'user_chip' },
@@ -383,12 +436,15 @@ const App = () => {
     setInputText('');
     setShowSuggestions(false);
 
+    // 2. Simula a resposta do assistente
     simulateAssistantResponse(trimmedQuery);
   };
 
+  //Não deve permitir clique se o assistente estiver digitando
   const handleSuggestionPress = (query: string) => {
     if (isTyping) return;
 
+    // Adiciona o chip de usuário e a resposta do assistente imediatamente
     setMessages((prev) => [
       ...prev,
       { id: `u_s${prev.length + 1}`, text: query, sender: 'user_chip' },
@@ -402,7 +458,7 @@ const App = () => {
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      backgroundColor: COLORS.background, 
+      backgroundColor: COLORS.grayBackground,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale',
@@ -411,16 +467,17 @@ const App = () => {
       {/* Header (Topo) */}
       <div style={{
         padding: '18px 18px',
-        background: `linear-gradient(90deg, ${COLORS.greenPrimary}, #4BA06F)`, 
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)', 
-        borderRadius: '0 0 24px 24px', 
+        borderBottom: 'none',
+        background: 'linear-gradient(90deg, #429B69, #328F5E, #4BA06F)',
+        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.33)',
+        borderRadius: '0 0 22px 22px',
         display: 'flex',
         alignItems: 'center',
         textAlign: 'center',
         justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.white }}>Chat Assistente</span>
+        <span style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.white }}>Chat assistente</span>
       </div>
 
       {/* Área de Chat (Scrollable) */}
