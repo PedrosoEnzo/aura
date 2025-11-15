@@ -15,15 +15,13 @@ const COLORS = {
 };
 
 // Configuração da URL da API hospedada no Render
-
-const RENDER_API_URL = "https://aura-back-app.onrender.com/api/chat/chatService"; 
-
+const RENDER_API_URL = "https://aura-back-app.onrender.com/apWi/chat/chatService"; 
 
 // --- Dados Mockados ---
 const initialSuggestions = [
   {
     id: '1',
-    text: 'Quando a melhor época para plantar alface?'
+    text: 'Qual a melhor época para plantar alface?'
   },
   {
     id: '2',
@@ -31,7 +29,7 @@ const initialSuggestions = [
   },
   {
     id: '3',
-    text: 'Como controlar os pulgões da minha platação?'
+    text: 'Como controlar os pulgões da minha plantação?'
   },
   {
     id: '4',
@@ -78,9 +76,6 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
         return (
           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
         );
-
-
-
       case 'sparkle': 
         return (
           <path
@@ -92,27 +87,23 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
             d="M12 4.25L13.75 6L15.5 4.25L17.25 6L15.5 7.75L17.25 9.5L15.5 11.25L13.75 9.5L12 11.25L10.25 9.5L8.5 11.25L6.75 9.5L8.5 7.75L6.75 6L8.5 4.25L10.25 6L12 4.25ZM20 18L21.5 19.5L20 21L18.5 19.5L20 18ZM4 18L5.5 19.5L4 21L2.5 19.5L4 18Z" 
           />
         );
-
-
-
-
-      case 'chevron-right': // Para o chip do usuário
+      case 'chevron-right':
         return (
           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18l6-6-6-6" />
         );
-      case 'home': // Ícone da barra de navegação
+      case 'home':
         return (
           <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
         );
-      case 'chart': // Ícone da barra de navegação
+      case 'chart':
         return (
           <path fill="currentColor" d="M12 2L6 8v14h12V8z" />
         );
-      case 'chat': // Ícone da barra de navegação
+      case 'chat':
         return (
           <path fill="currentColor" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" />
         );
-      case 'profile': // Ícone da barra de navegação
+      case 'profile':
         return (
           <path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
         );
@@ -125,7 +116,6 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
 
   if (!svgContent) return null;
 
-  // Ajusta stroke e fill baseado no tipo de ícone para manter a consistência visual
   const isStrokeIcon = ['sun', 'send', 'chevron-right'].includes(name);
 
   return (
@@ -191,7 +181,7 @@ const MessageBubble = ({ text, sender }) => {
     <div style={containerStyles}>
       {isAssistant && (
         <div style={{ alignSelf: 'flex-end', paddingRight: '6px', paddingBottom: '2px' }}>
-          <Icon name="assistant" size="20px" color={COLORS.greenDark} />
+          <Icon name="leaf" size="20px" color={COLORS.greenDark} />
         </div>
       )}
       <div style={{ ...bubbleStyles, ...(isAssistant ? assistantBubbleStyles : userBubbleStyles) }}>
@@ -202,7 +192,6 @@ const MessageBubble = ({ text, sender }) => {
 };
 
 // --- Componente: UserChip (Sugestão Clicada no Chat) ---
-
 const UserChip = ({ text }) => {
   const gradientColors = '#429B69, #328F5E, #4BA06F';
   const gradientStyle = {
@@ -228,7 +217,6 @@ const UserChip = ({ text }) => {
         ...gradientStyle
       }}>
         <span style={{ fontWeight: '600', fontSize: '14px', marginRight: '6px' }}>{text}</span>
-        {/* O ícone também deve ser branco para contraste */}
         <Icon name="chevron-right" size="14px" color={COLORS.white} />
       </div>
     </div>
@@ -264,7 +252,7 @@ const SuggestionItem = ({ item, onPress }) => (
 );
 
 // --- Componente: ChatInput (Barra de Digitação) ---
-const ChatInput = ({ onSend, value, onChangeText }) => (
+const ChatInput = ({ onSend, value, onChangeText, disabled }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
@@ -287,15 +275,17 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
         color: COLORS.textDark,
         border: `1px solid ${COLORS.borderLight}`,
         outline: 'none',
+        opacity: disabled ? 0.6 : 1,
       }}
-      placeholder="Digite sua pergunta sobre agricultura..."
+      placeholder={disabled ? "Aguarde a resposta..." : "Digite sua pergunta sobre agricultura..."}
       value={value}
       onChange={e => onChangeText(e.target.value)}
-      onKeyDown={e => { if (e.key === 'Enter') onSend(); }}
+      onKeyDown={e => { if (e.key === 'Enter' && !disabled) onSend(); }}
+      disabled={disabled}
     />
     <button
       onClick={onSend}
-      disabled={!value.trim()}
+      disabled={!value.trim() || disabled}
       style={{
         width: '44px',
         height: '44px',
@@ -303,10 +293,10 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: value.trim() ? COLORS.greenDark : COLORS.borderLight,
-        boxShadow: value.trim() ? '0 2px 8px rgba(58,138,76,0.3)' : 'none',
+        backgroundColor: (value.trim() && !disabled) ? COLORS.greenDark : COLORS.borderLight,
+        boxShadow: (value.trim() && !disabled) ? '0 2px 8px rgba(58,138,76,0.3)' : 'none',
         transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
-        cursor: value.trim() ? 'pointer' : 'not-allowed',
+        cursor: (value.trim() && !disabled) ? 'pointer' : 'not-allowed',
         outline: 'none',
         border: 'none',
       }}
@@ -316,21 +306,18 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
   </div>
 );
 
-// --- Componente: NavigationBar 
+// --- Componente: NavigationBar ---
 const NavigationBar = () => (
   <div style={{
     height: '38px',
     marginBottom: '30px',
     borderRadius: '30px',
     backgroundColor: 'transparent',
-
   }}>
   </div>
 );
 
-
-
-// --- Novo Componente: TypingIndicator ---
+// --- Componente: TypingIndicator ---
 const TypingIndicator = () => {
   const dotStyle = {
     width: '8px',
@@ -342,7 +329,6 @@ const TypingIndicator = () => {
     display: 'inline-block',
   };
 
-  // Carregando a mensagem
   const Dot = ({ delay }) => (
     <span style={{
       ...dotStyle,
@@ -357,40 +343,74 @@ const TypingIndicator = () => {
     maxWidth: 'fit-content',
     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     marginLeft: '6px',
+    backgroundColor: COLORS.greenLight,
   };
 
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px', marginTop: '4px' }}>
       <div style={{ alignSelf: 'flex-end', paddingRight: '6px', paddingBottom: '2px' }}>
-        <Icon name="assistant" size="20px" color={COLORS.greenDark} />
-        <style>
-          {`
-          @keyframes dot-flashing {
-            0% {
-              opacity: 0.3;
-              transform: translateY(0);
-            }
-            100% {
-              opacity: 1;
-              transform: translateY(-4px);
-            }
-          }
-        `}
-        </style>
+        <Icon name="leaf" size="20px" color={COLORS.greenDark} />
       </div>
       <div style={typingBubbleStyle}>
-        {/* Animated dots container */}
         <div style={{ display: 'flex', alignItems: 'center', height: '10px' }}>
           <Dot delay="0s" />
           <Dot delay="0.2s" />
           <Dot delay="0.4s" />
         </div>
       </div>
-
+      <style>
+        {`
+          @keyframes dot-flashing {
+            0% {
+              opacity: 0.3;
+              transform: translateY(0);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(-4px);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
 
+// --- Função para chamar a API do Render ---
+const callRenderAPI = async (message: string): Promise<string> => {
+  try {
+    console.log('Enviando mensagem para API:', message);
+    
+    const response = await fetch(RENDER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message,
+        // Adicione outros campos que sua API possa precisar
+      }),
+    });
+
+    console.log('Status da resposta:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Resposta da API:', data);
+    
+    // Tente diferentes campos possíveis na resposta
+    return data.response || data.answer || data.message || data.text || 
+           data.content || "Resposta recebida da API.";
+    
+  } catch (error) {
+    console.error('Erro detalhado ao chamar a API:', error);
+    return "Desculpe, houve um erro ao conectar com o servidor. Verifique sua conexão e tente novamente.";
+  }
+};
 
 // --- Componente Principal: App ---
 const App = () => {
@@ -407,50 +427,52 @@ const App = () => {
     }
   }, [messages, isTyping]);
 
-  // Simula a resposta do assistente (usada após o envio/clique na sugestão)
-  const simulateAssistantResponse = (query: string): void => {
-    const responseText = `Entendi sua pergunta sobre "${query}". Esta é uma resposta simulada. Para implementar um chat real com IA, você pode usar a AI SDK da Vercel com modelos como GPT ou Claude.`;
-
+  // Função para obter resposta real da API
+  const getAssistantResponse = async (query: string): Promise<void> => {
     setIsTyping(true);
 
-
-    // Simula um pequeno delay para a resposta
-    setTimeout(() => {
+    try {
+      const responseText = await callRenderAPI(query);
+      
       setMessages((prev) => [
         ...prev,
-        { id: `m${prev.length + 1}`, text: responseText, sender: 'assistant' },
+        { id: `m${Date.now()}`, text: responseText, sender: 'assistant' },
       ]);
-      setIsTyping(false); // Para a simulação de digitação
-    }, 1500);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { id: `m${Date.now()}`, text: "Erro ao conectar com o servidor. Tente novamente.", sender: 'assistant' },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleSendMessage = (query = inputText) => {
     const trimmedQuery = query.trim();
-    if (!trimmedQuery || isTyping) return; // Impede envio se estiver digitando
+    if (!trimmedQuery || isTyping) return;
 
     // 1. Adiciona a mensagem do usuário
     setMessages((prev) => [
       ...prev,
-      { id: `u${prev.length + 1}`, text: trimmedQuery, sender: 'user_chip' },
+      { id: `u${Date.now()}`, text: trimmedQuery, sender: 'user_chip' },
     ]);
     setInputText('');
     setShowSuggestions(false);
 
-    // 2. Simula a resposta do assistente
-    simulateAssistantResponse(trimmedQuery);
+    // 2. Chama a API real do Gemini via Render
+    getAssistantResponse(trimmedQuery);
   };
 
-  //Não deve permitir clique se o assistente estiver digitando
   const handleSuggestionPress = (query: string) => {
     if (isTyping) return;
 
-    // Adiciona o chip de usuário e a resposta do assistente imediatamente
     setMessages((prev) => [
       ...prev,
-      { id: `u_s${prev.length + 1}`, text: query, sender: 'user_chip' },
+      { id: `u_s${Date.now()}`, text: query, sender: 'user_chip' },
     ]);
     setShowSuggestions(false);
-    simulateAssistantResponse(query);
+    getAssistantResponse(query);
   };
 
   return (
@@ -477,7 +499,7 @@ const App = () => {
         justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <span style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.white }}>Chat assistente</span>
+        <span style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.white }}>Aurora - Assistente Agrícola</span>
       </div>
 
       {/* Área de Chat (Scrollable) */}
@@ -495,7 +517,7 @@ const App = () => {
           return <MessageBubble key={msg.id} text={msg.text} sender={msg.sender} />;
         })}
 
-        {/* INDICADOR DE DIGITAÇÃO AQUI */}
+        {/* Indicador de digitação */}
         {isTyping && <TypingIndicator />}
 
         {/* Seção de Sugestões (Estado Inicial) */}
@@ -513,6 +535,7 @@ const App = () => {
         onSend={() => handleSendMessage()}
         value={inputText}
         onChangeText={setInputText}
+        disabled={isTyping}
       />
 
       <NavigationBar />
