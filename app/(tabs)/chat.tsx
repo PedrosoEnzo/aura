@@ -1,4 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+
+
 
 // Rotas de Cores
 const COLORS = {
@@ -16,11 +19,16 @@ const COLORS = {
 
 // Configuração da URL da API hospedada no Render
 
-const RENDER_API_URL = "https://aura-back-app.onrender.com/api/chat/chatService"; 
+const RENDER_API_URL = "http://localhost:3000/api/chat/message";
+
+interface Suggestion {
+  id: string;
+  text: string;
+}
 
 
 // --- Dados Mockados ---
-const initialSuggestions = [
+const initialSuggestions: Suggestion[] = [
   {
     id: '1',
     text: 'Quando a melhor época para plantar alface?'
@@ -42,14 +50,14 @@ const initialSuggestions = [
 const initialMessages = [
   {
     id: 'm1',
-    text: 'Olá! Sou sua assistente Aurora. Como posso ajudá-lo hoje?',
+    text: 'Olá! Sou sua assistente Aurora. Como posso te ajudar hoje?',
     sender: 'assistant',
   },
 ];
 
 // --- Componente: Icon (Usando SVGs Inline) ---
-const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) => {
-  const getSvgPath = (name) => {
+const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }: { name: string, color: string, size: string, style?: any }) => {
+  const getSvgPath = (name: string) => {
     switch (name) {
       case 'leaf':
         return (
@@ -81,15 +89,15 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
 
 
 
-      case 'sparkle': 
+      case 'sparkle':
         return (
           <path
-            fill="none" 
-            stroke="currentColor" 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             strokeWidth="2"
-            d="M12 4.25L13.75 6L15.5 4.25L17.25 6L15.5 7.75L17.25 9.5L15.5 11.25L13.75 9.5L12 11.25L10.25 9.5L8.5 11.25L6.75 9.5L8.5 7.75L6.75 6L8.5 4.25L10.25 6L12 4.25ZM20 18L21.5 19.5L20 21L18.5 19.5L20 18ZM4 18L5.5 19.5L4 21L2.5 19.5L4 18Z" 
+            d="M12 4.25L13.75 6L15.5 4.25L17.25 6L15.5 7.75L17.25 9.5L15.5 11.25L13.75 9.5L12 11.25L10.25 9.5L8.5 11.25L6.75 9.5L8.5 7.75L6.75 6L8.5 4.25L10.25 6L12 4.25ZM20 18L21.5 19.5L20 21L18.5 19.5L20 18ZM4 18L5.5 19.5L4 21L2.5 19.5L4 18Z"
           />
         );
 
@@ -144,8 +152,8 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }) =>
   );
 };
 
-// --- Componente: MessageBubble (Bolha de Mensagem) ---
-const MessageBubble = ({ text, sender }) => {
+// Menagem do assistente
+const MessageBubble = ({ text, sender }: { text: string, sender: string }) => {
   const isAssistant = sender === 'assistant';
   const bubbleStyles = {
     padding: '12px 16px',
@@ -203,7 +211,7 @@ const MessageBubble = ({ text, sender }) => {
 
 // --- Componente: UserChip (Sugestão Clicada no Chat) ---
 
-const UserChip = ({ text }) => {
+const UserChip = ({ text }: { text: string }) => {
   const gradientColors = '#429B69, #328F5E, #4BA06F';
   const gradientStyle = {
     background: `linear-gradient(90deg, ${gradientColors})`,
@@ -228,25 +236,24 @@ const UserChip = ({ text }) => {
         ...gradientStyle
       }}>
         <span style={{ fontWeight: '600', fontSize: '14px', marginRight: '6px' }}>{text}</span>
-        {/* O ícone também deve ser branco para contraste */}
         <Icon name="chevron-right" size="14px" color={COLORS.white} />
       </div>
     </div>
   );
 };
 
-// --- Componente: SuggestionItem (Item da Lista de Sugestões Iniciais) ---
-const SuggestionItem = ({ item, onPress }) => (
+// Sugestões de perguntas
+const SuggestionItem = ({ item, onPress }: { onPress: (query: string) => void, item: Suggestion }) => (
   <button
     onClick={() => onPress(item.text)}
     style={{
       display: 'flex',
       alignItems: 'center',
       backgroundColor: COLORS.white,
-      padding: '16px', 
+      padding: '16px',
       borderRadius: '20px',
-      marginBottom: '10px', 
-      border: `1px solid ${COLORS.greenDark}`, 
+      marginBottom: '10px',
+      border: `1px solid ${COLORS.greenDark}`,
       boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
       cursor: 'pointer',
       width: '100%',
@@ -263,8 +270,8 @@ const SuggestionItem = ({ item, onPress }) => (
   </button>
 );
 
-// --- Componente: ChatInput (Barra de Digitação) ---
-const ChatInput = ({ onSend, value, onChangeText }) => (
+// Input de digitação do chat
+const ChatInput = ({ onSend, value, onChangeText }: { onSend: any, value: string, onChangeText: any }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
@@ -316,21 +323,18 @@ const ChatInput = ({ onSend, value, onChangeText }) => (
   </div>
 );
 
-// --- Componente: NavigationBar 
+//  Compenete da barra inferior vazia
 const NavigationBar = () => (
   <div style={{
     height: '38px',
     marginBottom: '30px',
     borderRadius: '30px',
     backgroundColor: 'transparent',
-
   }}>
   </div>
 );
 
 
-
-// --- Novo Componente: TypingIndicator ---
 const TypingIndicator = () => {
   const dotStyle = {
     width: '8px',
@@ -342,8 +346,8 @@ const TypingIndicator = () => {
     display: 'inline-block',
   };
 
-  // Carregando a mensagem
-  const Dot = ({ delay }) => (
+  // Carregando a mensagem SPAN
+  const Dot = ({ delay }: { delay: string }) => (
     <span style={{
       ...dotStyle,
       animationDelay: delay,
@@ -379,7 +383,7 @@ const TypingIndicator = () => {
         </style>
       </div>
       <div style={typingBubbleStyle}>
-        {/* Animated dots container */}
+
         <div style={{ display: 'flex', alignItems: 'center', height: '10px' }}>
           <Dot delay="0s" />
           <Dot delay="0.2s" />
@@ -392,13 +396,12 @@ const TypingIndicator = () => {
 };
 
 
-// --- Componente Principal: App ---
 const App = () => {
   const [messages, setMessages] = useState(initialMessages);
   const [inputText, setInputText] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Efeito para rolar automaticamente para o final
   useEffect(() => {
@@ -434,11 +437,39 @@ const App = () => {
       { id: `u${prev.length + 1}`, text: trimmedQuery, sender: 'user_chip' },
     ]);
     setInputText('');
+
+
+    sendMessageToAPI(trimmedQuery);
     setShowSuggestions(false);
 
-    // 2. Simula a resposta do assistente
-    simulateAssistantResponse(trimmedQuery);
-  };
+  }
+
+
+
+  function sendMessageToAPI(message: string) {
+    fetch(RENDER_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: message }),
+    }).then((response) => response.json())
+      .then((data) => {
+        console.log('Resposta da API:', data.response);
+        setMessages((prev) => [
+          ...prev,
+          { id: `m${prev.length + 1}`, text: data.response, sender: 'assistant' },
+        ]);
+        // Aqui você pode adicionar a resposta da API às mensagens, se desejar
+      })
+      .catch((error) => {
+        console.error('Erro ao chamar a API:', error);
+        simulateAssistantResponse(message);
+      });
+
+  }
+
+
 
   //Não deve permitir clique se o assistente estiver digitando
   const handleSuggestionPress = (query: string) => {
@@ -450,7 +481,8 @@ const App = () => {
       { id: `u_s${prev.length + 1}`, text: query, sender: 'user_chip' },
     ]);
     setShowSuggestions(false);
-    simulateAssistantResponse(query);
+
+    sendMessageToAPI(query);
   };
 
   return (
