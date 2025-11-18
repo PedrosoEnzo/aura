@@ -254,7 +254,7 @@ const SuggestionItem = ({ item, onPress }: { onPress: (query: string) => void, i
       borderRadius: '20px',
       marginBottom: '10px',
       border: `1px solid ${COLORS.greenDark}`,
-      boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+      boxShadow: '0 1px 4px rgba(22, 21, 21, 0.1)',
       cursor: 'pointer',
       width: '100%',
       textAlign: 'left',
@@ -270,7 +270,7 @@ const SuggestionItem = ({ item, onPress }: { onPress: (query: string) => void, i
   </button>
 );
 
-// Input de digitação do chat
+// Input para a digitação do chat
 const ChatInput = ({ onSend, value, onChangeText }: { onSend: any, value: string, onChangeText: any }) => (
   <div style={{
     display: 'flex',
@@ -323,7 +323,7 @@ const ChatInput = ({ onSend, value, onChangeText }: { onSend: any, value: string
   </div>
 );
 
-//  Compenete da barra inferior vazia
+//  Compenete da barra inferior vazia para dar atura
 const NavigationBar = () => (
   <div style={{
     height: '38px',
@@ -404,20 +404,21 @@ const App = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Efeito para rolar automaticamente para o final
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
 
-  // Simula a resposta do assistente (usada após o envio/clique na sugestão)
+  // Simula a resposta do assistente 
   const simulateAssistantResponse = (query: string): void => {
     const responseText = `Entendi sua pergunta sobre "${query}". Esta é uma resposta simulada. Para implementar um chat real com IA, você pode usar a AI SDK da Vercel com modelos como GPT ou Claude.`;
 
     setIsTyping(true);
 
 
-    // Simula um pequeno delay para a resposta
+    // Simula um pequeno delay para a resposta VERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
