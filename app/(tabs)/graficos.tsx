@@ -17,7 +17,9 @@ import {
 import { LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
-const API_URL = "https://aura-back-app.onrender.com/api/sensores"; // Rota do ESP32
+
+// ✔ ROTA DO BANCO CORRETA
+const API_URL = "https://aura-back-app.onrender.com/api/sensores/sensores";
 
 interface SensorData {
   timestamp: string;
@@ -43,10 +45,14 @@ export default function RelatorioGraficos() {
 
   const sanitize = (arr: number[]) => arr.map((v) => (isFinite(v) ? v : 0));
 
+  // ✔ Corrigido para puxar corretamente o último registro
   const fetchData = async () => {
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
+
+      console.log("📡 Dados recebidos:", data);
+
       const novoDado = Array.isArray(data) ? data : [data];
 
       setDados((prev) => {
@@ -83,6 +89,7 @@ export default function RelatorioGraficos() {
     );
 
   const labels = dados.map((d) => new Date(d.timestamp).getHours() + "h");
+
   const umidade = sanitize(dados.map((d) => d.umidadeSolo ?? 0));
   const luminosidade = sanitize(dados.map((d) => d.luminosidade ?? 0));
   const temperaturaAr = sanitize(dados.map((d) => d.temperaturaAr ?? 0));
@@ -229,7 +236,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#e8f5e9",
     padding: 6,
     borderRadius: 8,
-    alignSelf: "center",
   },
   card: {
     backgroundColor: "#fff",

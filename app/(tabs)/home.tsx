@@ -13,13 +13,12 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   MaterialCommunityIcons,
-  FontAwesome5,
   Feather,
 } from "@expo/vector-icons";
 
 // ===== CONFIGURAÇÃO DAS APIs =====
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
-const SENSOR_API = "https://aura-back-app.onrender.com/api/sensores"; // <-- rota do ESP32
+const SENSOR_API = "https://aura-back-app.onrender.com/api/sensores/sensores";
 
 // ===== TIPO DO USUÁRIO =====
 interface Usuario {
@@ -44,7 +43,7 @@ export default function Home() {
   const [sensores, setSensores] = useState({
     umidadeSolo: null as number | null,
     luminosidade: null as number | null,
-    tempSolo: null as number | null,
+    tempSolo: null as number | null,      // não vem no JSON, permanece null
     tempAr: null as number | null,
     umidadeAr: null as number | null,
   });
@@ -60,14 +59,12 @@ export default function Home() {
       setLoading(true);
       try {
         const token = await AsyncStorage.getItem("token");
-        if (!token) {
-          console.warn("Token não encontrado");
-          return;
-        }
+        if (!token) return;
 
         const resUser = await fetch(`${API_URL}/perfil`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+
         const userData = await resUser.json();
         setUsuario(userData);
         setFormData(userData);
@@ -81,18 +78,22 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // ===== FUNÇÃO PARA BUSCAR DADOS DOS SENSORES (ESP32) =====
+  // ===== BUSCAR DADOS DO BANCO (SENSORES) =====
   const fetchSensores = async () => {
     try {
       const res = await fetch(SENSOR_API);
       const data = await res.json();
+
+      console.log("📡 Dados recebidos do banco:", data);
+
       setSensores({
         umidadeSolo: data.umidadeSolo ?? null,
         luminosidade: data.luminosidade ?? null,
-        tempSolo: data.temperaturaSolo ?? null,
+        tempSolo: null, // não existe no banco
         tempAr: data.temperaturaAr ?? null,
         umidadeAr: data.umidadeAr ?? null,
       });
+
     } catch (err) {
       console.error("Erro ao buscar sensores:", err);
     }
@@ -100,14 +101,14 @@ export default function Home() {
 
   // ===== ATUALIZA AUTOMATICAMENTE OS SENSORES =====
   useEffect(() => {
-    fetchSensores(); // primeira atualização
-    const interval = setInterval(fetchSensores, 3600000); // atualiza a cada 1h
+    fetchSensores(); 
+    const interval = setInterval(fetchSensores, 3600000);
     return () => clearInterval(interval);
   }, []);
 
   // ===== MANIPULAÇÃO DE CAMPOS =====
   const handleChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   // ===== SALVAR PERFIL =====
@@ -115,10 +116,7 @@ export default function Home() {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        console.warn("Token não encontrado");
-        return;
-      }
+      if (!token) return;
 
       const res = await fetch(`${API_URL}/atualizarPerfil`, {
         method: "PUT",
@@ -128,6 +126,7 @@ export default function Home() {
         },
         body: JSON.stringify(formData),
       });
+
       const data = await res.json();
       setUsuario(data);
       setEditMode(false);
@@ -138,7 +137,7 @@ export default function Home() {
     }
   };
 
-  // ===== GERAR RELATÓRIO (opcional, se tiver backend configurado) =====
+  // ===== GERAR RELATÓRIO =====
   const gerarRelatorio = async () => {
     const token = await AsyncStorage.getItem("token");
     if (!token) {
@@ -161,30 +160,29 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Erro ao gerar relatório:", res.status, errorText);
+        const txt = await res.text();
+        console.error("Erro:", res.status, txt);
         Alert.alert("Erro", "Não foi possível gerar o relatório.");
         return;
       }
 
       const dados = await res.json();
       setRelatorio(dados);
-      Alert.alert("Relatório gerado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao buscar relatório:", error);
-      Alert.alert("Erro", "Falha na comunicação com o servidor.");
+      Alert.alert("Relatório gerado!");
+    } catch (err) {
+      console.error("Erro:", err);
+      Alert.alert("Erro", "Falha na comunicação.");
     }
   };
 
   // ===== LOADING =====
   if (loading)
-    return (
-      <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />
-    );
+    return <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />;
 
-  // ===== RENDERIZAÇÃO =====
+  // ===== RENDER =====
   return (
     <ScrollView contentContainerStyle={styles.container}>
+
       {/* ===== CABEÇALHO ===== */}
       <View style={styles.header}>
         <Image
@@ -193,12 +191,13 @@ export default function Home() {
         />
         <Text style={styles.nome}>{usuario?.nome || "-"}</Text>
         <Text style={styles.profissao}>{usuario?.profissao || "-"}</Text>
+
         <TouchableOpacity style={styles.empresaButton}>
           <Text style={styles.empresaButtonText}>{usuario?.empresa || "-"}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ===== INFORMAÇÕES ===== */}
+      {/* ===== INFO ===== */}
       <View style={styles.infoRow}>
         <View style={styles.infoCol}>
           <Text style={styles.infoLabel}>Área Total</Text>
@@ -206,11 +205,7 @@ export default function Home() {
             <TextInput
               style={styles.infoValue}
               value={formData.areaTotal?.toString() || ""}
-              onChangeText={(text) =>
-                handleChange("areaTotal", text.replace(/[^\d.]/g, ""))
-              }
-              keyboardType="numeric"
-              placeholder="hectares"
+              onChangeText={(t) => handleChange("areaTotal", t.replace(/[^\d.]/g, ""))}
             />
           ) : (
             <Text style={styles.infoValue}>
@@ -225,8 +220,7 @@ export default function Home() {
             <TextInput
               style={styles.infoValue}
               value={formData.cultivos || ""}
-              onChangeText={(text) => handleChange("cultivos", text)}
-              placeholder="Ex: Alface, Soja, Milho"
+              onChangeText={(t) => handleChange("cultivos", t)}
             />
           ) : (
             <Text style={styles.infoValue}>{usuario?.cultivos || "-"}</Text>
@@ -241,11 +235,7 @@ export default function Home() {
             <TextInput
               style={styles.infoValue}
               value={formData.dispositivosAtivos?.toString() || ""}
-              onChangeText={(text) =>
-                handleChange("dispositivosAtivos", text.replace(/[^\d]/g, ""))
-              }
-              keyboardType="numeric"
-              placeholder="Quantidade"
+              onChangeText={(t) => handleChange("dispositivosAtivos", t.replace(/[^\d]/g, ""))}
             />
           ) : (
             <Text style={styles.infoValue}>
@@ -268,10 +258,7 @@ export default function Home() {
 
       {/* ===== BOTÕES ===== */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={gerarRelatorio}
-        >
+        <TouchableOpacity style={styles.actionButton} onPress={gerarRelatorio}>
           <Text style={styles.actionButtonText}>Relatório Completo</Text>
         </TouchableOpacity>
 
@@ -311,7 +298,7 @@ export default function Home() {
           <Feather name="thermometer" size={24} color="#1b5e20" />
           <Text style={styles.sensorLabel}>Temp. do Ar</Text>
           <Text style={styles.sensorValue}>
-            {sensores.tempAr !== null ? `${sensores.tempAr}°` : "-"}
+            {sensores.tempAr !== null ? `${sensores.tempAr}°C` : "-"}
           </Text>
         </View>
 
@@ -332,15 +319,13 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: "#fff", padding: 18 },
   header: { alignItems: "center", marginTop: 24 },
   avatar: { width: 90, height: 90, borderRadius: 45, marginBottom: 8 },
-  nome: { fontSize: 22, fontWeight: "bold", color: "#042b00", textAlign: "center" },
-  profissao: { fontSize: 16, color: "#1b5e20", textAlign: "center", marginBottom: 4 },
+  nome: { fontSize: 22, fontWeight: "bold", color: "#042b00" },
+  profissao: { fontSize: 16, color: "#1b5e20" },
   empresaButton: {
     backgroundColor: "#1b5e20",
     borderRadius: 16,
     paddingVertical: 4,
     paddingHorizontal: 18,
-    alignSelf: "center",
-    marginBottom: 12,
   },
   empresaButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   infoRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
