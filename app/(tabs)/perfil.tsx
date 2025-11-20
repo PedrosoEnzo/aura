@@ -150,61 +150,73 @@ export default function Perfil() {
   };
 
   // ====== BUSCAR SENSORES ======
-  const fetchSensoresEProcessa = async () => {
-    try {
-      const res = await fetch(SENSOR_API);
-      if (!res.ok) return;
-      const data = await res.json();
-      const umidadeSolo = data.umidadeSolo ?? data.umidade_solo ?? null;
-      const umidadeAr = data.umidadeAr ?? data.umidade_ar ?? null;
+const fetchSensoresEProcessa = async () => {
+  try {
+    const res = await fetch(SENSOR_API);
+    if (!res.ok) throw new Error("Falha na requisição do sensor");
+    
+    const data = await res.json();
+    const umidadeSolo = data.umidadeSolo ?? data.umidade_solo ?? null;
+    const umidadeAr = data.umidadeAr ?? data.umidade_ar ?? null;
+    const temperatura = data.temperatura ?? data.temp ?? null; // exemplo de sensor extra
 
-      if (typeof umidadeSolo === "number") {
-        if (umidadeSolo < LIMIAR_BOMBA && !soloSecoNotificado.current) {
-          const texto = `Umidade do solo ${umidadeSolo}% — abaixo de ${LIMIAR_BOMBA}%.`;
-          pushNotificacaoInterna("solo_seco", texto);
-          sendLocalNotification("Solo Seco", texto);
-          soloSecoNotificado.current = true;
-        }
-        if (umidadeSolo >= LIMIAR_BOMBA) soloSecoNotificado.current = false;
-      }
-
-      if (typeof umidadeAr === "number") {
-        if (umidadeAr < LIMIAR_BOMBA && !arSecoNotificado.current) {
-          const texto = `Umidade do ar ${umidadeAr}% — abaixo de ${LIMIAR_BOMBA}%.`;
-          pushNotificacaoInterna("ar_seco", texto);
-          sendLocalNotification("Ar Seco", texto);
-          arSecoNotificado.current = true;
-        }
-        if (umidadeAr >= LIMIAR_BOMBA) arSecoNotificado.current = false;
-      }
-
-      const bombaAtiva =
-        (typeof umidadeSolo === "number" && umidadeSolo < LIMIAR_BOMBA) ||
-        (typeof umidadeAr === "number" && umidadeAr < LIMIAR_BOMBA);
-
-      if (bombaLigadaRef.current === null) {
-        bombaLigadaRef.current = bombaAtiva;
-      } else {
-        if (bombaAtiva && bombaLigadaRef.current === false) {
-          pushNotificacaoInterna("bomba_on", "Bomba acionada automaticamente.");
-          sendLocalNotification("Bomba Ligada", "A bomba foi ligada.");
-        }
-        if (!bombaAtiva && bombaLigadaRef.current === true) {
-          pushNotificacaoInterna("bomba_off", "Bomba desligada.");
-          sendLocalNotification("Bomba Desligada", "A bomba foi desligada.");
-        }
-        bombaLigadaRef.current = bombaAtiva;
-      }
-    } catch (err) {
-      console.log("Erro sensores:", err);
+    // ===== Checar falha nos dados =====
+    if (umidadeSolo === null || umidadeAr === null || temperatura === null) {
+      const texto = "Falha no envio de dados do sensor!";
+      pushNotificacaoInterna("info", texto);
+      sendLocalNotification("Falha Sensor", texto);
+      return; // interrompe processamento
     }
-  };
 
-  useEffect(() => {
-    fetchSensoresEProcessa();
-    const interval = setInterval(fetchSensoresEProcessa, 20 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    // ===== Notificações normais =====
+    if (umidadeSolo < LIMIAR_BOMBA && !soloSecoNotificado.current) {
+      const texto = `Umidade do solo ${umidadeSolo}% — abaixo de ${LIMIAR_BOMBA}%.`;
+      pushNotificacaoInterna("solo_seco", texto);
+      sendLocalNotification("Solo Seco", texto);
+      soloSecoNotificado.current = true;
+    }
+    if (umidadeSolo >= LIMIAR_BOMBA) soloSecoNotificado.current = false;
+
+    if (umidadeAr < LIMIAR_BOMBA && !arSecoNotificado.current) {
+      const texto = `Umidade do ar ${umidadeAr}% — abaixo de ${LIMIAR_BOMBA}%.`;
+      pushNotificacaoInterna("ar_seco", texto);
+      sendLocalNotification("Ar Seco", texto);
+      arSecoNotificado.current = true;
+    }
+    if (umidadeAr >= LIMIAR_BOMBA) arSecoNotificado.current = false;
+
+    const bombaAtiva =
+      (typeof umidadeSolo === "number" && umidadeSolo < LIMIAR_BOMBA) ||
+      (typeof umidadeAr === "number" && umidadeAr < LIMIAR_BOMBA);
+
+    if (bombaLigadaRef.current === null) {
+      bombaLigadaRef.current = bombaAtiva;
+    } else {
+      if (bombaAtiva && bombaLigadaRef.current === false) {
+        pushNotificacaoInterna("bomba_on", "Bomba acionada automaticamente.");
+        sendLocalNotification("Bomba Ligada", "A bomba foi ligada.");
+      }
+      if (!bombaAtiva && bombaLigadaRef.current === true) {
+        pushNotificacaoInterna("bomba_off", "Bomba desligada.");
+        sendLocalNotification("Bomba Desligada", "A bomba foi desligada.");
+      }
+      bombaLigadaRef.current = bombaAtiva;
+    }
+  } catch (err) {
+    console.log("Erro sensores:", err);
+    const texto = "Falha ao buscar dados do sensor!";
+    pushNotificacaoInterna("info", texto);
+    sendLocalNotification("Erro Sensor", texto);
+  }
+};
+
+// ===== Intervalo de 2 segundos =====
+useEffect(() => {
+  fetchSensoresEProcessa(); // primeira chamada imediata
+  const interval = setInterval(fetchSensoresEProcessa, 60 * 60 * 1000); // a cada 1h
+  return () => clearInterval(interval);
+}, []);
+
 
   // ====== SALVAR PERFIL COM VALIDAÇÃO ======
   const handleSave = async () => {
