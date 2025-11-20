@@ -137,47 +137,9 @@ export default function Home() {
     }
   };
 
-  // ===== GERAR RELATÓRIO =====
-  const gerarRelatorio = async () => {
-    const token = await AsyncStorage.getItem("token");
-    if (!token) {
-      Alert.alert("Erro", "Token não encontrado.");
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_URL}/sensores`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          dataInicial,
-          dataFinal,
-          parametro,
-        }),
-      });
-
-      if (!res.ok) {
-        const txt = await res.text();
-        console.error("Erro:", res.status, txt);
-        Alert.alert("Erro", "Não foi possível gerar o relatório.");
-        return;
-      }
-
-      const dados = await res.json();
-      setRelatorio(dados);
-      Alert.alert("Relatório gerado!");
-    } catch (err) {
-      console.error("Erro:", err);
-      Alert.alert("Erro", "Falha na comunicação.");
-    }
-  };
-
   // ===== LOADING =====
   if (loading)
-    return <ActivityIndicator size="large" color="#2196F3" style={{ marginTop: 50 }} />;
+    return <ActivityIndicator size="large" color="#269726ff" style={{ marginTop: 50 }} />;
 
   // ===== RENDER =====
   return (
@@ -258,7 +220,7 @@ export default function Home() {
 
       {/* ===== BOTÕES ===== */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.actionButton} onPress={gerarRelatorio}>
+        <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.actionButtonText}>Relatório Completo</Text>
         </TouchableOpacity>
 

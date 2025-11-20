@@ -82,7 +82,7 @@ export default function Login() {
         </View>
         <Text style={styles.esqueceuSenha}>
           Esqueceu sua senha?
-          <Link href={"/home"}>
+          <Link href={"/"}>
             <Text style={styles.esqueceuSenha2}> Criar Nova</Text>
           </Link>
         </Text>
