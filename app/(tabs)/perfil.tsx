@@ -41,7 +41,7 @@ interface Usuario {
   nome: string;
   email: string;
   profissao?: string;
-  empresa?: string[20];
+  empresa?: string;
   foto?: string;
   erro?: string;
 }
@@ -77,7 +77,7 @@ export default function Perfil() {
     foto: '',
   });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false); // ✅ Loader ao salvar
+  const [saving, setSaving] = useState(false); 
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificacoes, setNotificacoes] = useState<NotificacaoItem[]>([]);
   const hasUnread = notificacoes.length > 0;
@@ -150,72 +150,72 @@ export default function Perfil() {
   };
 
   // ====== BUSCAR SENSORES ======
-const fetchSensoresEProcessa = async () => {
-  try {
-    const res = await fetch(SENSOR_API);
-    if (!res.ok) throw new Error("Falha na requisição do sensor");
-    
-    const data = await res.json();
-    const umidadeSolo = data.umidadeSolo ?? data.umidade_solo ?? null;
-    const umidadeAr = data.umidadeAr ?? data.umidade_ar ?? null;
-    const temperatura = data.temperatura ?? data.temp ?? null; // exemplo de sensor extra
+  const fetchSensoresEProcessa = async () => {
+    try {
+      const res = await fetch(SENSOR_API);
+      if (!res.ok) throw new Error("Falha na requisição do sensor");
 
-    // ===== Checar falha nos dados =====
-    if (umidadeSolo === null || umidadeAr === null || temperatura === null) {
-      const texto = "Falha no envio de dados do sensor!";
+      const data = await res.json();
+      const umidadeSolo = data.umidadeSolo ?? data.umidade_solo ?? null;
+      const umidadeAr = data.umidadeAr ?? data.umidade_ar ?? null;
+      const temperatura = data.temperatura ?? data.temp ?? null; // exemplo de sensor extra
+
+      // ===== Checar falha nos dados =====
+      if (umidadeSolo === null || umidadeAr === null || temperatura === null) {
+        const texto = "Falha no envio de dados do sensor!";
+        pushNotificacaoInterna("info", texto);
+        sendLocalNotification("Falha Sensor", texto);
+        return; // interrompe processamento
+      }
+
+      // ===== Notificações normais =====
+      if (umidadeSolo < LIMIAR_BOMBA && !soloSecoNotificado.current) {
+        const texto = `Umidade do solo ${umidadeSolo}% — abaixo de ${LIMIAR_BOMBA}%.`;
+        pushNotificacaoInterna("solo_seco", texto);
+        sendLocalNotification("Solo Seco", texto);
+        soloSecoNotificado.current = true;
+      }
+      if (umidadeSolo >= LIMIAR_BOMBA) soloSecoNotificado.current = false;
+
+      if (umidadeAr < LIMIAR_BOMBA && !arSecoNotificado.current) {
+        const texto = `Umidade do ar ${umidadeAr}% — abaixo de ${LIMIAR_BOMBA}%.`;
+        pushNotificacaoInterna("ar_seco", texto);
+        sendLocalNotification("Ar Seco", texto);
+        arSecoNotificado.current = true;
+      }
+      if (umidadeAr >= LIMIAR_BOMBA) arSecoNotificado.current = false;
+
+      const bombaAtiva =
+        (typeof umidadeSolo === "number" && umidadeSolo < LIMIAR_BOMBA) ||
+        (typeof umidadeAr === "number" && umidadeAr < LIMIAR_BOMBA);
+
+      if (bombaLigadaRef.current === null) {
+        bombaLigadaRef.current = bombaAtiva;
+      } else {
+        if (bombaAtiva && bombaLigadaRef.current === false) {
+          pushNotificacaoInterna("bomba_on", "Bomba acionada automaticamente.");
+          sendLocalNotification("Bomba Ligada", "A bomba foi ligada.");
+        }
+        if (!bombaAtiva && bombaLigadaRef.current === true) {
+          pushNotificacaoInterna("bomba_off", "Bomba desligada.");
+          sendLocalNotification("Bomba Desligada", "A bomba foi desligada.");
+        }
+        bombaLigadaRef.current = bombaAtiva;
+      }
+    } catch (err) {
+      console.log("Erro sensores:", err);
+      const texto = "Falha ao buscar dados do sensor!";
       pushNotificacaoInterna("info", texto);
-      sendLocalNotification("Falha Sensor", texto);
-      return; // interrompe processamento
+      sendLocalNotification("Erro Sensor", texto);
     }
+  };
 
-    // ===== Notificações normais =====
-    if (umidadeSolo < LIMIAR_BOMBA && !soloSecoNotificado.current) {
-      const texto = `Umidade do solo ${umidadeSolo}% — abaixo de ${LIMIAR_BOMBA}%.`;
-      pushNotificacaoInterna("solo_seco", texto);
-      sendLocalNotification("Solo Seco", texto);
-      soloSecoNotificado.current = true;
-    }
-    if (umidadeSolo >= LIMIAR_BOMBA) soloSecoNotificado.current = false;
-
-    if (umidadeAr < LIMIAR_BOMBA && !arSecoNotificado.current) {
-      const texto = `Umidade do ar ${umidadeAr}% — abaixo de ${LIMIAR_BOMBA}%.`;
-      pushNotificacaoInterna("ar_seco", texto);
-      sendLocalNotification("Ar Seco", texto);
-      arSecoNotificado.current = true;
-    }
-    if (umidadeAr >= LIMIAR_BOMBA) arSecoNotificado.current = false;
-
-    const bombaAtiva =
-      (typeof umidadeSolo === "number" && umidadeSolo < LIMIAR_BOMBA) ||
-      (typeof umidadeAr === "number" && umidadeAr < LIMIAR_BOMBA);
-
-    if (bombaLigadaRef.current === null) {
-      bombaLigadaRef.current = bombaAtiva;
-    } else {
-      if (bombaAtiva && bombaLigadaRef.current === false) {
-        pushNotificacaoInterna("bomba_on", "Bomba acionada automaticamente.");
-        sendLocalNotification("Bomba Ligada", "A bomba foi ligada.");
-      }
-      if (!bombaAtiva && bombaLigadaRef.current === true) {
-        pushNotificacaoInterna("bomba_off", "Bomba desligada.");
-        sendLocalNotification("Bomba Desligada", "A bomba foi desligada.");
-      }
-      bombaLigadaRef.current = bombaAtiva;
-    }
-  } catch (err) {
-    console.log("Erro sensores:", err);
-    const texto = "Falha ao buscar dados do sensor!";
-    pushNotificacaoInterna("info", texto);
-    sendLocalNotification("Erro Sensor", texto);
-  }
-};
-
-// ===== Intervalo de 2 segundos =====
-useEffect(() => {
-  fetchSensoresEProcessa(); // primeira chamada imediata
-  const interval = setInterval(fetchSensoresEProcessa, 60 * 60 * 1000); // a cada 1h
-  return () => clearInterval(interval);
-}, []);
+  // ===== Intervalo de 2 segundos =====
+  useEffect(() => {
+    fetchSensoresEProcessa(); // primeira chamada imediata
+    const interval = setInterval(fetchSensoresEProcessa, 60 * 60 * 1000); // a cada 1h
+    return () => clearInterval(interval);
+  }, []);
 
 
   // ====== SALVAR PERFIL COM VALIDAÇÃO ======
@@ -325,6 +325,17 @@ useEffect(() => {
             </View>
           </TouchableOpacity>
         </View>
+        < View style={styles.titleContainer}>
+          <Text style={styles.titlePerfil}>Olá, <TextInput
+            style={styles.titlePerfil}
+            value={formData.nome}
+            onChangeText={(t) => setFormData({ ...formData, nome: t })}
+            placeholder="Nome"
+            placeholderTextColor="#666"
+          /> </Text>
+
+
+        </View>
 
         {/* FOTO */}
         <TouchableOpacity onPress={editMode ? handlePickImage : undefined} style={styles.avatarContainer}>
@@ -338,8 +349,6 @@ useEffect(() => {
             </View>
           )}
         </TouchableOpacity>
-
-        <Text style={styles.title}>Atualize e edite seus dados:</Text>
 
         {/* CAMPOS */}
         {editMode ? (
@@ -420,7 +429,7 @@ useEffect(() => {
               </View>
             </View>
             <TouchableOpacity style={styles.updateButton} onPress={() => setEditMode(true)}>
-              <Text style={styles.updateButtonText}>Editar</Text>
+              <Text style={styles.updateButtonText}>Editar Perfil</Text>
             </TouchableOpacity>
           </>
         )}
@@ -461,10 +470,11 @@ useEffect(() => {
 // ===================== ESTILOS =====================
 const styles = StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: "#fff", alignItems: "center", padding: 20 },
+  titleContainer: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
+  titlePerfil: { fontSize: 24, fontWeight: "bold", color: "#1b5e20", marginBottom: 10 },
   avatarContainer: { alignItems: "center", marginTop: 30 },
   avatar: { width: 150, height: 150, borderRadius: 100, backgroundColor: "#ddd" },
   cameraOverlay: { position: "absolute", bottom: 0, right: 0, backgroundColor: "#1b5e20", padding: 8, borderRadius: 25 },
-  title: { marginTop: 20, fontSize: 18, fontWeight: "bold" },
   section: { width: "100%", marginTop: 20 },
   inputBox: { flexDirection: "row", alignItems: "center", backgroundColor: "#f5f5f5", borderRadius: 15, borderWidth: 1, borderColor: "#1b5e20", paddingHorizontal: 12, paddingVertical: 10, marginBottom: 12 },
   inputText: { flex: 1, marginLeft: 10, fontSize: 16, color: "#042b00" },
