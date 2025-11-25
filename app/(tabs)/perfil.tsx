@@ -41,7 +41,7 @@ interface Usuario {
   nome: string;
   email: string;
   profissao?: string;
-  empresa?: string;
+  empresa?: string[20];
   foto?: string;
   erro?: string;
 }

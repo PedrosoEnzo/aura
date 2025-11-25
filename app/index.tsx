@@ -32,7 +32,7 @@ export default function Home() {
           />
           <Text style={styles.titulo}>Sua estação ambiental inteligente!</Text>
           {carregando ? (
-            <ActivityIndicator size="large" color="#00cc66" />
+            <ActivityIndicator size="large" color="#0f9b55ff" />
           ) : null}
         </View>
       </View>

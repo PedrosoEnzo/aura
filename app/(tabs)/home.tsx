@@ -9,11 +9,12 @@ import {
   ActivityIndicator,
   TextInput,
   Alert,
+  Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   MaterialCommunityIcons,
-  Feather,
+  Feather, FontAwesome5,
 } from "@expo/vector-icons";
 
 // ===== CONFIGURAÇÃO DAS APIs =====
@@ -101,7 +102,7 @@ export default function Home() {
 
   // ===== ATUALIZA AUTOMATICAMENTE OS SENSORES =====
   useEffect(() => {
-    fetchSensores(); 
+    fetchSensores();
     const interval = setInterval(fetchSensores, 3600000);
     return () => clearInterval(interval);
   }, []);
@@ -159,86 +160,7 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
-      {/* ===== INFO ===== */}
-      <View style={styles.infoRow}>
-        <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>Área Total</Text>
-          {editMode ? (
-            <TextInput
-              style={styles.infoValue}
-              value={formData.areaTotal?.toString() || ""}
-              onChangeText={(t) => handleChange("areaTotal", t.replace(/[^\d.]/g, ""))}
-            />
-          ) : (
-            <Text style={styles.infoValue}>
-              {usuario?.areaTotal ? `${usuario.areaTotal} hectares` : "-"}
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>Cultivos</Text>
-          {editMode ? (
-            <TextInput
-              style={styles.infoValue}
-              value={formData.cultivos || ""}
-              onChangeText={(t) => handleChange("cultivos", t)}
-            />
-          ) : (
-            <Text style={styles.infoValue}>{usuario?.cultivos || "-"}</Text>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.infoRow}>
-        <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>Dispositivos Ativos</Text>
-          {editMode ? (
-            <TextInput
-              style={styles.infoValue}
-              value={formData.dispositivosAtivos?.toString() || ""}
-              onChangeText={(t) => handleChange("dispositivosAtivos", t.replace(/[^\d]/g, ""))}
-            />
-          ) : (
-            <Text style={styles.infoValue}>
-              {usuario?.dispositivosAtivos
-                ? `${usuario.dispositivosAtivos} unidades`
-                : "-"}
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.infoCol}>
-          <Text style={styles.infoLabel}>Última Atualização</Text>
-          <Text style={styles.infoValue}>
-            {usuario?.ultimaAtualizacao
-              ? new Date(usuario.ultimaAtualizacao).toLocaleString()
-              : "-"}
-          </Text>
-        </View>
-      </View>
-
-      {/* ===== BOTÕES ===== */}
-      <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Relatório Completo</Text>
-        </TouchableOpacity>
-
-        {editMode ? (
-          <TouchableOpacity style={styles.actionButton} onPress={handleSave}>
-            <Text style={styles.actionButtonText}>Salvar</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => setEditMode(true)}
-          >
-            <Text style={styles.actionButtonText}>Editar informações</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* ===== SENSOR CARDS ===== */}
+{/* ===== SENSOR CARDS ===== */}
       <View style={styles.sensoresGrid}>
         <View style={styles.sensorCard}>
           <MaterialCommunityIcons name="water-percent" size={24} color="#1b5e20" />
@@ -272,55 +194,272 @@ export default function Home() {
           </Text>
         </View>
       </View>
+       
+
+      {/* ===== INFO ===== */}
+          <View style={styles.retangle}>    
+      <View style={styles.infoRow}>
+        <View style={styles.infoCol}>
+          <Text style={styles.infoLabel}>Área Total</Text>
+          {editMode ? (
+            <TextInput
+              style={styles.infoValue}
+              value={formData.areaTotal?.toString() || ""}
+              onChangeText={(t) => handleChange("areaTotal", t.replace(/[^\d.]/g, ""))}
+            />
+          ) : (
+            <Text style={styles.infoValue}>
+              {usuario?.areaTotal ? `${usuario.areaTotal} hectares` : "-"}
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.infoCol}>
+          <Text style={styles.infoLabel}>Cultivos</Text>
+          {editMode ? (
+            <TextInput
+              style={styles.infoValue}
+              value={formData.cultivos || ""}
+              onChangeText={(t) => handleChange("cultivos", t)}
+            />
+          ) : (
+            <Text style={styles.infoValue}>{usuario?.cultivos || "-"}</Text>
+          )}
+        </View>
+      </View>
+     
+      <View style={styles.infoRow}>
+        <View style={styles.infoCol}>
+          <Text style={styles.infoLabel}>Dispositivos Ativos</Text>
+          {editMode ? (
+            <TextInput
+              style={styles.infoValue}
+              value={formData.dispositivosAtivos?.toString() || ""}
+              onChangeText={(t) => handleChange("dispositivosAtivos", t.replace(/[^\d]/g, ""))}
+            />
+          ) : (
+            <Text style={styles.infoValue}>
+              {usuario?.dispositivosAtivos
+                ? `${usuario.dispositivosAtivos} unidades`
+                : "-"}
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.infoCol}>
+          <Text style={styles.infoLabel}>Última Atualização</Text>
+          <Text style={styles.infoValue}>
+            {usuario?.ultimaAtualizacao
+              ? new Date(usuario.ultimaAtualizacao).toLocaleString()
+              : "-"}
+          </Text>
+        </View>
+      </View>
+      
+
+      
+      {/* ===== BOTÕES ===== */}
+<View style={styles.buttonRow}>
+  {/* Botão Secundário */}
+  <TouchableOpacity 
+    style={styles.secondaryButton} 
+    activeOpacity={0.7}
+  >
+    <Text style={styles.secondaryButtonText}>Relatório Dos Dados</Text>
+  </TouchableOpacity>
+
+  {editMode ? (
+    // Botão Primário
+    <TouchableOpacity 
+      style={styles.primaryButton} 
+      onPress={handleSave} 
+      activeOpacity={0.10}
+    >
+      <Text style={styles.primaryButtonText}>Salvar</Text>
+    </TouchableOpacity>
+  ) : (
+    // Botão Secundário
+    <TouchableOpacity
+      style={styles.secondaryButton}
+      onPress={() => setEditMode(true)}
+      activeOpacity={0.7}
+    >
+      <Text style={styles.secondaryButtonText}>Editar</Text>
+    </TouchableOpacity>
+  )}
+</View>
+  </View>
     </ScrollView>
   );
 }
 
 // ===== ESTILOS =====
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: "#fff", padding: 18 },
-  header: { alignItems: "center", marginTop: 24 },
-  avatar: { width: 90, height: 90, borderRadius: 45, marginBottom: 8 },
-  nome: { fontSize: 22, fontWeight: "bold", color: "#042b00" },
-  profissao: { fontSize: 16, color: "#1b5e20" },
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#f9fafb", 
+    padding: 24,
+  },
+  header: {
+    alignItems: "center",
+    marginTop: 40,
+  },
+  avatar: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    marginBottom: 14,
+    borderWidth: 3,
+    borderColor: "#4caf50", // verde mais vibrante
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  
+  nome: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1b5e20", // verde escuro elegante
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  
+  profissao: {
+    fontSize: 15,
+    color: "#6b6b6b", // cinza neutro
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  
   empresaButton: {
-    backgroundColor: "#1b5e20",
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 18,
+    backgroundColor: "#4caf50", // verde vibrante
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    marginTop: 16,
+    shadowColor: "#4caf50",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  empresaButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-  infoCol: { flex: 1, alignItems: "center" },
-  infoLabel: { fontSize: 13, color: "#1b5e20" },
-  infoValue: { fontSize: 15, fontWeight: "bold", color: "#042b00" },
-  buttonRow: { flexDirection: "row", justifyContent: "center", marginVertical: 12 },
-  actionButton: {
-    backgroundColor: "#fff",
-    borderColor: "#1b5e20",
+  
+  empresaButtonText: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 15,
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+  },
+  retangle: {
+   backgroundColor: "#ffffff", 
+   borderRadius: 24,
+   padding: 20,
+   marginTop: 20,
+   marginBottom: 20,
+   shadowColor: "#000",
+   shadowOpacity: 0.06,
+   shadowRadius: 6,
+   elevation: 6,
+   alignItems: "center",
+ },
+  infoRow: {
+  flexDirection: "row",
+  justifyContent: "space-around", 
+},
+infoCol: {
+  flex: 1,
+  alignItems: "center",
+  marginHorizontal: 8,
+},
+infoLabel: {
+  fontSize: 14,
+  color: "#6b6b6b",
+  marginBottom: 10, 
+},
+infoValue: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#2e7d32",
+},
+
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
+  },
+  // Botão Primário (verde cheio)
+  primaryButton: {
+    backgroundColor: "#2e7d32",
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 28,
+    marginHorizontal: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryButtonText: {
+    color: "#ffffff",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+
+  // Botão Secundário (branco com borda verde)
+  secondaryButton: {
+    backgroundColor: "#ffffff",
+    borderColor: "#2e7d32",
     borderWidth: 1,
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    marginHorizontal: 4,
+    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginHorizontal: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  actionButtonText: { color: "#1b5e20", fontWeight: "bold", fontSize: 15 },
+  secondaryButtonText: {
+    color: "#2e7d32",
+    fontWeight: "600",
+    fontSize: 15,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
   sensoresGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginVertical: 18,
+    marginVertical: 20,
   },
   sensorCard: {
     width: "47%",
-    backgroundColor: "#f5f5f5",
-    borderColor: "#1b5e20",
-    borderWidth: 1,
-    borderRadius: 18,
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
     alignItems: "center",
-    padding: 12,
-    marginBottom: 12,
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.16,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  sensorLabel: { fontSize: 14, color: "#1b5e20", marginTop: 4 },
-  sensorValue: { fontSize: 22, fontWeight: "bold", color: "#042b00", marginTop: 2 },
+  sensorLabel: {
+    fontSize: 14,
+    color: "#4caf50",
+    marginTop: 6
+  },
+  sensorValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1b5e20",
+    marginTop: 4
+  },
 });
