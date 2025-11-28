@@ -18,7 +18,6 @@ import { LineChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
 
-// ✔ ROTA DO BANCO CORRETA
 const API_URL = "https://aura-back-app.onrender.com/api/sensores/sensores";
 
 interface SensorData {
@@ -45,14 +44,10 @@ export default function RelatorioGraficos() {
 
   const sanitize = (arr: number[]) => arr.map((v) => (isFinite(v) ? v : 0));
 
-  // ✔ Corrigido para puxar corretamente o último registro
   const fetchData = async () => {
     try {
       const res = await fetch(API_URL);
       const data = await res.json();
-
-      console.log("📡 Dados recebidos:", data);
-
       const novoDado = Array.isArray(data) ? data : [data];
 
       setDados((prev) => {
@@ -76,7 +71,7 @@ export default function RelatorioGraficos() {
     return (
       <ActivityIndicator
         size="large"
-        color="#2196F3"
+        color="#264d00"
         style={{ marginTop: 50 }}
       />
     );
@@ -95,13 +90,25 @@ export default function RelatorioGraficos() {
   const temperaturaAr = sanitize(dados.map((d) => d.temperaturaAr ?? 0));
   const umidadeAr = sanitize(dados.map((d) => d.umidadeAr ?? 0));
 
+  // 🔥 NOVO DESIGN – estilo SLIM e científico
   const chartConfig = {
-    backgroundGradientFrom: "#fff",
-    backgroundGradientTo: "#fff",
-    color: (opacity = 1) => `rgba(27, 94, 32, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(4, 43, 0, ${opacity})`,
-    strokeWidth: 2,
-    propsForDots: { r: "4", strokeWidth: "1", stroke: "#1b5e20" },
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientTo: "#ffffff",
+
+    decimalPlaces: 1,
+    color: () => "#4a5e39", // verde musgo elegante
+    labelColor: () => "#555",
+
+    strokeWidth: 1.8, // linha fina, igual à imagem
+
+    propsForDots: {
+      r: "0", // sem bolinhas para ficar clean
+    },
+
+    propsForBackgroundLines: {
+      stroke: "#d0d0d0",
+      strokeWidth: 1,
+    },
   };
 
   const openModal = (label: string, data: number[], color: string) => {
@@ -110,24 +117,27 @@ export default function RelatorioGraficos() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      {...(Platform.OS === "web" ? { onStartShouldSetResponder: undefined } : {})}
-    >
+    <ScrollView style={styles.container}>
       <Text style={styles.header}>RELATÓRIO DE GRÁFICOS</Text>
 
       {/* Umidade do Solo */}
-      <TouchableOpacity onPress={() => openModal("Umidade do Solo", umidade, "#1b5e20")}>
+      <TouchableOpacity
+        onPress={() => openModal("Umidade do Solo", umidade, "#4a5e39")}
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <MaterialCommunityIcons name="water-percent" size={20} color="#1b5e20" />
+            <MaterialCommunityIcons
+              name="water-percent"
+              size={20}
+              color="#4a5e39"
+            />
             <Text style={styles.cardTitle}>Umidade do Solo</Text>
           </View>
-          <Text style={styles.cardSubtitle}>Últimos 7 registros (%)</Text>
+
           <LineChart
             data={{ labels, datasets: [{ data: umidade }] }}
             width={screenWidth - 40}
-            height={220}
+            height={170}
             chartConfig={chartConfig}
             bezier
             style={styles.chart}
@@ -137,17 +147,19 @@ export default function RelatorioGraficos() {
       </TouchableOpacity>
 
       {/* Luminosidade */}
-      <TouchableOpacity onPress={() => openModal("Luminosidade", luminosidade, "#ff9800")}>
+      <TouchableOpacity
+        onPress={() => openModal("Luminosidade", luminosidade, "#4a5e39")}
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Feather name="sun" size={20} color="#1b5e20" />
+            <Feather name="sun" size={20} color="#4a5e39" />
             <Text style={styles.cardTitle}>Luminosidade</Text>
           </View>
-          <Text style={styles.cardSubtitle}>Últimos 7 registros (lux)</Text>
+
           <LineChart
             data={{ labels, datasets: [{ data: luminosidade }] }}
             width={screenWidth - 40}
-            height={220}
+            height={170}
             chartConfig={chartConfig}
             bezier
             style={styles.chart}
@@ -157,17 +169,21 @@ export default function RelatorioGraficos() {
       </TouchableOpacity>
 
       {/* Temperatura do Ar */}
-      <TouchableOpacity onPress={() => openModal("Temperatura do Ar", temperaturaAr, "#ff6347")}>
+      <TouchableOpacity
+        onPress={() =>
+          openModal("Temperatura do Ar", temperaturaAr, "#4a5e39")
+        }
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Feather name="thermometer" size={20} color="#1b5e20" />
+            <Feather name="thermometer" size={20} color="#4a5e39" />
             <Text style={styles.cardTitle}>Temperatura do Ar</Text>
           </View>
-          <Text style={styles.cardSubtitle}>Últimos 7 registros (°C)</Text>
+
           <LineChart
-            data={{ labels, datasets: [{ data: temperaturaAr, color: () => "#ff6347" }] }}
+            data={{ labels, datasets: [{ data: temperaturaAr }] }}
             width={screenWidth - 40}
-            height={220}
+            height={170}
             chartConfig={chartConfig}
             bezier
             style={styles.chart}
@@ -177,17 +193,19 @@ export default function RelatorioGraficos() {
       </TouchableOpacity>
 
       {/* Umidade do Ar */}
-      <TouchableOpacity onPress={() => openModal("Umidade do Ar", umidadeAr, "#1e88e5")}>
+      <TouchableOpacity
+        onPress={() => openModal("Umidade do Ar", umidadeAr, "#4a5e39")}
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Feather name="droplet" size={20} color="#1b5e20" />
+            <Feather name="droplet" size={20} color="#4a5e39" />
             <Text style={styles.cardTitle}>Umidade do Ar</Text>
           </View>
-          <Text style={styles.cardSubtitle}>Últimos 7 registros (%)</Text>
+
           <LineChart
-            data={{ labels, datasets: [{ data: umidadeAr, color: () => "#1e88e5" }] }}
+            data={{ labels, datasets: [{ data: umidadeAr }] }}
             width={screenWidth - 40}
-            height={220}
+            height={170}
             chartConfig={chartConfig}
             bezier
             style={styles.chart}
@@ -196,21 +214,31 @@ export default function RelatorioGraficos() {
         </View>
       </TouchableOpacity>
 
-      {/* Modal Expandido */}
+      {/* Modal */}
       <Modal visible={modalVisible} animationType="slide">
         <View style={styles.modalContainer}>
           {selectedChart && (
             <>
               <Text style={styles.modalTitle}>{selectedChart.label}</Text>
+
               <LineChart
-                data={{ labels, datasets: [{ data: selectedChart.data, color: () => selectedChart.color }] }}
+                data={{
+                  labels,
+                  datasets: [
+                    {
+                      data: selectedChart.data,
+                      color: () => selectedChart.color,
+                    },
+                  ],
+                }}
                 width={screenWidth}
-                height={400}
+                height={300}
                 chartConfig={chartConfig}
                 bezier
                 style={styles.chart}
                 fromZero
               />
+
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setModalVisible(false)}
@@ -226,35 +254,73 @@ export default function RelatorioGraficos() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 10 },
-  header: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#042b00",
-    textAlign: "center",
-    marginVertical: 12,
-    backgroundColor: "#e8f5e9",
-    padding: 6,
-    borderRadius: 8,
+  container: {
+    backgroundColor: "#ffffff",
+    padding: 12,
   },
+
+  header: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#3a3a3a",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+
   card: {
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#c8e6c9",
-    padding: 12,
-    marginBottom: 20,
+    borderColor: "#dcdcdc",
+    padding: 14,
+    marginBottom: 24,
+
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 2,
   },
-  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
-  cardTitle: { fontSize: 15, fontWeight: "bold", color: "#1b5e20", marginLeft: 6 },
-  cardSubtitle: { fontSize: 12, color: "#555", marginBottom: 8 },
-  chart: { borderRadius: 12 },
-  modalContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff", padding: 10 },
-  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
-  closeButton: { marginTop: 20, padding: 10, backgroundColor: "#1b5e20", borderRadius: 8 },
-  closeButtonText: { color: "#fff", fontWeight: "bold" },
+
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#4a5e39",
+    marginLeft: 6,
+  },
+
+  chart: {
+    borderRadius: 12,
+  },
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    paddingTop: 40,
+    alignItems: "center",
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#4a5e39",
+  },
+
+  closeButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#4a5e39",
+    borderRadius: 8,
+  },
+
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
 });

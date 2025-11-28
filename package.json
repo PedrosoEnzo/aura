@@ -21,7 +21,7 @@
     "chart.js": "^4.5.1",
     "chartjs-node-canvas": "^5.0.0",
     "dotenv": "^17.2.3",
-    "expo": "^54.0.23",
+    "expo": "^54.0.25",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
     "expo-device": "^8.0.9",
