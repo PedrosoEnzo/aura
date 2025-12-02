@@ -10,17 +10,15 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
-  // Alert, // Não está sendo usado
-  // Pressable, // Não está sendo usado
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   MaterialCommunityIcons,
-  Feather, 
-  // FontAwesome5, // Não está sendo usado
+  Feather,
 } from "@expo/vector-icons";
 
-import AgroBanner from "./AgroBanner"; // ⬅️ NOVO: Importa o componente do banner
+import AgroBanner from "./AgroBanner";
+
 
 // ===== CONFIGURAÇÃO DAS APIs =====
 const API_URL = "https://aura-back-app.onrender.com/api/auth";
@@ -49,7 +47,7 @@ export default function Home() {
   const [sensores, setSensores] = useState({
     umidadeSolo: null as number | null,
     luminosidade: null as number | null,
-    tempSolo: null as number | null,      
+    tempSolo: null as number | null,
     tempAr: null as number | null,
     umidadeAr: null as number | null,
   });
@@ -105,7 +103,7 @@ export default function Home() {
     }
   };
 
-  // ===== ATUALIZA AUTOMATICAMENTE OS SENSORES =====
+  // ===== ATUALIZAOS SENSORES =====
   useEffect(() => {
     fetchSensores();
     const interval = setInterval(fetchSensores, 3600000); // A cada 1 hora
@@ -164,8 +162,8 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
-       {/* ⬅️ NOVO: Banner Dinâmico (Topo da Home) */}
-      <AgroBanner /> 
+      {/* ===== AGRO BANNER ===== */}
+      <AgroBanner />
 
       {/* ===== SENSOR CARDS ===== */}
       <View style={styles.sensoresGrid}>
@@ -201,9 +199,10 @@ export default function Home() {
           </Text>
         </View>
       </View>
-        
+
+
       {/* ===== INFO E BOTÕES (Container Branco) ===== */}
-      <View style={styles.retangle}>    
+      <View style={styles.retangle}>
         <View style={styles.infoRow}>
           <View style={styles.infoCol}>
             <Text style={styles.infoLabel}>Área Total</Text>
@@ -234,7 +233,7 @@ export default function Home() {
             )}
           </View>
         </View>
-        
+
         <View style={styles.infoRow}>
           <View style={styles.infoCol}>
             <Text style={styles.infoLabel}>Dispositivos Ativos</Text>
@@ -267,8 +266,8 @@ export default function Home() {
         {/* ===== BOTÕES ===== */}
         <View style={styles.buttonRow}>
           {/* Botão Secundário - Relatório */}
-          <TouchableOpacity 
-            style={styles.secondaryButton} 
+          <TouchableOpacity
+            style={styles.secondaryButton}
             activeOpacity={0.7}
             onPress={() => alert('Função de Relatório será implementada aqui!')} // Ação temporária
           >
@@ -277,9 +276,9 @@ export default function Home() {
 
           {editMode ? (
             // Botão Primário - Salvar
-            <TouchableOpacity 
-              style={styles.primaryButton} 
-              onPress={handleSave} 
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleSave}
               activeOpacity={0.7}
             >
               <Text style={styles.primaryButtonText}>Salvar</Text>
@@ -304,13 +303,12 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#f9fafb", 
-    padding: 0, // Ajustado para 0, pois o banner tem padding interno
+    backgroundColor: "#f9fafb",
+    padding: 0,
   },
   header: {
     alignItems: "center",
-    marginTop: 20, // Reduzido um pouco o padding topo após a inserção do banner
-    paddingHorizontal: 24,
+    marginTop: 50,
   },
   avatar: {
     width: 110,
@@ -318,40 +316,40 @@ const styles = StyleSheet.create({
     borderRadius: 55,
     marginBottom: 14,
     borderWidth: 3,
-    borderColor: "#4caf50", 
+    borderColor: "#0a5246", // ALTERADO: De #4caf50 para #0a5246
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
   },
-  
+
   nome: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#1b5e20", 
+    color: "#004d40", // ALTERADO: De #1b5e20 para #004d40
     letterSpacing: 0.8,
     marginBottom: 4,
   },
-  
+
   profissao: {
     fontSize: 15,
-    color: "#6b6b6b", 
+    color: "#6b6b6b",
     marginTop: 4,
     fontWeight: "500",
   },
-  
+
   empresaButton: {
-    backgroundColor: "#4caf50", 
+    backgroundColor: "#0a5246", // ALTERADO: De #4caf50 para #0a5246
     borderRadius: 24,
     paddingVertical: 10,
     paddingHorizontal: 28,
     marginTop: 16,
-    shadowColor: "#4caf50",
+    shadowColor: "#0a5246", // ALTERADO: De #4caf50 para #0a5246
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
   },
-  
+
   empresaButtonText: {
     color: "#ffffff",
     fontWeight: "600",
@@ -359,57 +357,57 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
     textTransform: "uppercase",
   },
+  // 1. Estilo do Contêiner Principal
   retangle: {
-    backgroundColor: "#ffffff", 
+    backgroundColor: "#ffffff",
     borderRadius: 24,
     padding: 20,
-    marginTop: 20,
-    marginBottom: 20,
-    marginHorizontal: 24, // Adicionado margin horizontal para respeitar o layout
-    shadowColor: "#000",
+    marginTop: 8,
+    marginBottom: 100,
+    marginHorizontal: 20,
+    shadowColor: "#004d40", // ALTERADO: De #204b22ff para #004d40
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 6,
-    alignItems: "center",
+    // Removido alignItems: "center" para permitir que o infoRow ocupe 100% da largura.
   },
+
+  // --- Linha (Flex Container) ---
   infoRow: {
     flexDirection: "row",
-    justifyContent: "space-between", 
-    alignItems: "flex-start", 
-    flexWrap: "wrap", 
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    flexWrap: "wrap",
     marginVertical: 8,
   },
 
   infoCol: {
+    flex: 1,
     alignItems: "center",
-    marginHorizontal: 8,
-    paddingHorizontal: 6,
-    flex: 1, // Permite que as colunas ocupem espaço igual
+    paddingHorizontal: 8,
   },
 
   infoLabel: {
     fontSize: 14,
     color: "#6b6b6b",
     marginBottom: 6,
-    textAlign: "center", 
+    textAlign: "center",
   },
 
-  // Ajustado para permitir que o TextInput tenha uma largura
   infoValue: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2e7d32",
+    color: "#004d40", // ALTERADO: De #2e7d32 para #004d40
     textAlign: "center",
-    width: '100%', // Adiciona largura para TextInput
+    width: "100%",
   },
-
   buttonRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
   primaryButton: {
-    backgroundColor: "#2e7d32",
+    backgroundColor: "#0a5246", // ALTERADO: De #2e7d32 para #0a5246
     borderRadius: 24,
     paddingVertical: 12,
     paddingHorizontal: 28,
@@ -428,10 +426,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: "uppercase",
   },
-
   secondaryButton: {
     backgroundColor: "#ffffff",
-    borderColor: "#2e7d32",
+    borderColor: "#0a5246", // ALTERADO: De #2e7d32 para #0a5246
     borderWidth: 1,
     borderRadius: 24,
     paddingVertical: 12,
@@ -445,7 +442,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: "#2e7d32",
+    color: "#0a5246", // ALTERADO: De #2e7d32 para #0a5246
     fontWeight: "600",
     fontSize: 15,
     letterSpacing: 0.6,
@@ -456,7 +453,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     marginVertical: 20,
-    paddingHorizontal: 24, // Adicionado margin horizontal para respeitar o layout
+    paddingHorizontal: 24,
   },
   sensorCard: {
     width: "47%",
@@ -464,21 +461,21 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.10,
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 1,
   },
   sensorLabel: {
     fontSize: 14,
-    color: "#4caf50",
+    color: "#0a5246", // ALTERADO: De #4caf50 para #0a5246
     marginTop: 6
   },
   sensorValue: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#1b5e20",
+    color: "#004d40", // ALTERADO: De #1b5e20 para #004d40
     marginTop: 4
   },
 });

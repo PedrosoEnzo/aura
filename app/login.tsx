@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   header: { marginTop: 120, justifyContent: "center", alignItems: "center", marginBottom: 30 },
   corpo: { justifyContent: "center", alignItems: "center" },
-  textoPrincipal: { fontSize: 24, fontWeight: "bold", color: "#042b00", marginLeft: 65, paddingBottom: 15 },
+  textoPrincipal: { fontSize: 24, fontWeight: "bold", color: "#042b00", textAlign: "center", paddingBottom: 20},
   containerInput: { justifyContent: "center", alignItems: "center" },
   inputs: { borderWidth: 1, borderColor: "#042b00", marginBottom: 15, width: 300, height: 45, borderRadius: 20, paddingLeft: 20, color: "#042b00", fontWeight: "500", backgroundColor: "#f5f5f5" },
   esqueceuSenha: { fontSize: 12, color: "#042b00" },
