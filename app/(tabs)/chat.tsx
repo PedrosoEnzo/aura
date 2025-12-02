@@ -3,9 +3,9 @@ import ReactMarkdown from 'react-markdown';
 
 // Rotas de Cores
 const COLORS = {
-  greenDark: '#3A8A4C',
+  greenDark: '#0a5246ff',
   greenLight: '#e9e9e9ff',
-  greenAccent: '#1ED760',
+  greenAccent: '#004d40',
   textDark: '#333333',
   textSubtle: '#555555',
   borderLight: '#E0E0E0',
@@ -215,7 +215,7 @@ const MessageBubble = ({ text, sender }: { text: string, sender: string }) => {
 // --- Componente: UserChip (Sugestão Clicada no Chat) ---
 
 const UserChip = ({ text }: { text: string }) => {
-  const gradientColors = '#429B69, #328F5E, #4BA06F';
+  const gradientColors = '#145c50ff, #0d5549ff, #055245ff';
   const gradientStyle = {
     background: `linear-gradient(90deg, ${gradientColors})`,
     color: COLORS.white,
@@ -323,17 +323,6 @@ const ChatInput = ({ onSend, value, onChangeText }: { onSend: any, value: string
     >
       <Icon name="send" size="22px" color={COLORS.white} />
     </button>
-  </div>
-);
-
-//  Compenete da barra inferior vazia para dar atura
-const NavigationBar = () => (
-  <div style={{
-    height: '38px',
-    marginBottom: '30px',
-    borderRadius: '30px',
-    backgroundColor: 'transparent',
-  }}>
   </div>
 );
 
@@ -508,7 +497,7 @@ const App = () => {
       <div style={{
         padding: '18px 18px',
         borderBottom: 'none',
-        background: 'linear-gradient(90deg, #429B69, #328F5E, #4BA06F)',
+        background: 'linear-gradient(90deg, #145c50ff, #0d5549ff, #055245ff)',
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.33)',
         borderRadius: '0 0 22px 22px',
         display: 'flex',
@@ -554,8 +543,6 @@ const App = () => {
         value={inputText}
         onChangeText={setInputText}
       />
-
-      <NavigationBar />
     </div>
   );
 };
