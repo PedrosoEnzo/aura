@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-
-
 // Rotas de Cores
 const COLORS = {
   greenDark: '#3A8A4C',
@@ -18,14 +16,12 @@ const COLORS = {
 };
 
 // Configuração da URL da API hospedada no Render
-
 const RENDER_API_URL = "http://localhost:3000/api/chat/message";
 
 interface Suggestion {
   id: string;
   text: string;
 }
-
 
 // --- Dados Mockados ---
 const initialSuggestions: Suggestion[] = [
@@ -50,7 +46,7 @@ const initialSuggestions: Suggestion[] = [
 const initialMessages = [
   {
     id: 'm1',
-    text: 'Olá! Sou sua assistente Aurora. Como posso te ajudar hoje?',
+    text: 'Olá! Sou sua assistente **Aurora**. Como posso te ajudar hoje?',
     sender: 'assistant',
   },
 ];
@@ -86,9 +82,6 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }: { 
         return (
           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
         );
-
-
-
       case 'sparkle':
         return (
           <path
@@ -100,10 +93,6 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }: { 
             d="M12 4.25L13.75 6L15.5 4.25L17.25 6L15.5 7.75L17.25 9.5L15.5 11.25L13.75 9.5L12 11.25L10.25 9.5L8.5 11.25L6.75 9.5L8.5 7.75L6.75 6L8.5 4.25L10.25 6L12 4.25ZM20 18L21.5 19.5L20 21L18.5 19.5L20 18ZM4 18L5.5 19.5L4 21L2.5 19.5L4 18Z"
           />
         );
-
-
-
-
       case 'chevron-right': // Para o chip do usuário
         return (
           <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 18l6-6-6-6" />
@@ -124,6 +113,10 @@ const Icon = ({ name, color = COLORS.textSubtle, size = '18px', style = {} }: { 
         return (
           <path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
         );
+      case 'assistant': // 🚨 Ícone Adicionado
+        return (
+          <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.4 12.3 13 13 13 14h-2c0-1.1.45-2.19 1.18-3l.92-.92c.38-.38.59-.88.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+        )
       default:
         return null;
     }
@@ -163,8 +156,7 @@ const MessageBubble = ({ text, sender }: { text: string, sender: string }) => {
     marginBottom: '8px',
     fontSize: '14px',
     lineHeight: '20px',
-    display: 'flex',
-    alignItems: 'center',
+    // Removido display: flex e alignItems: center para o markdown funcionar com blocos
     borderBottom: isAssistant ? `1px solid ${COLORS.borderLight}` : 'none',
   };
 
@@ -203,7 +195,18 @@ const MessageBubble = ({ text, sender }: { text: string, sender: string }) => {
         </div>
       )}
       <div style={{ ...bubbleStyles, ...(isAssistant ? assistantBubbleStyles : userBubbleStyles) }}>
-        <span>{text}</span>
+        {/* 🚨 Aplicação do ReactMarkdown com estilos inline MINIMOS para blocos */}
+        <ReactMarkdown
+          components={{
+            // Estilos para manter a consistência da bolha original
+            p: ({ children }) => <p style={{ margin: '0 0 4px 0', fontSize: '14px', lineHeight: '20px' }}>{children}</p>,
+            strong: ({ children }) => <strong style={{ fontWeight: '700' }}>{children}</strong>,
+            ul: ({ children }) => <ul style={{ margin: '8px 0 4px 15px', padding: '0', listStyleType: 'disc' }}>{children}</ul>,
+            li: ({ children }) => <li style={{ marginBottom: '4px' }}>{children}</li>,
+          }}
+        >
+          {text}
+        </ReactMarkdown>
       </div>
     </div>
   );
@@ -323,7 +326,7 @@ const ChatInput = ({ onSend, value, onChangeText }: { onSend: any, value: string
   </div>
 );
 
-//  Compenete da barra inferior vazia para dar atura
+//  Compenete da barra inferior vazia para dar atura
 const NavigationBar = () => (
   <div style={{
     height: '38px',
@@ -369,17 +372,17 @@ const TypingIndicator = () => {
         <Icon name="assistant" size="20px" color={COLORS.greenDark} />
         <style>
           {`
-          @keyframes dot-flashing {
-            0% {
-              opacity: 0.3;
-              transform: translateY(0);
-            }
-            100% {
-              opacity: 1;
-              transform: translateY(-4px);
-            }
-          }
-        `}
+          @keyframes dot-flashing {
+            0% {
+              opacity: 0.3;
+              transform: translateY(0);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(-4px);
+            }
+          }
+        `}
         </style>
       </div>
       <div style={typingBubbleStyle}>
@@ -413,12 +416,17 @@ const App = () => {
 
   // Simula a resposta do assistente 
   const simulateAssistantResponse = (query: string): void => {
-    const responseText = `Entendi sua pergunta sobre "${query}". Esta é uma resposta simulada. Para implementar um chat real com IA, você pode usar a AI SDK da Vercel com modelos como GPT ou Claude.`;
+    // Resposta simulada com Markdown para teste
+    const responseText = `Entendi sua pergunta sobre **"${query}"**. Esta é uma resposta simulada. 
+    
+**Para mais detalhes, considere:**
+* Usar **markdown** para formatação.\n
+* Usar _italico_ para ênfase.\n
+* Utilizar listas para organização.`;
 
     setIsTyping(true);
 
-
-    // Simula um pequeno delay para a resposta VERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR
+    // Simula um pequeno delay para a resposta
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -446,8 +454,8 @@ const App = () => {
   }
 
 
-
   function sendMessageToAPI(message: string) {
+    setIsTyping(true); // Inicia o indicador enquanto espera a API
     fetch(RENDER_API_URL, {
       method: 'POST',
       headers: {
@@ -456,27 +464,26 @@ const App = () => {
       body: JSON.stringify({ message: message }),
     }).then((response) => response.json())
       .then((data) => {
+        setIsTyping(false); // Para ao receber resposta da API
         console.log('Resposta da API:', data.response);
         setMessages((prev) => [
           ...prev,
           { id: `m${prev.length + 1}`, text: data.response, sender: 'assistant' },
         ]);
-        // Aqui você pode adicionar a resposta da API às mensagens, se desejar
       })
       .catch((error) => {
+        setIsTyping(false); // Para em caso de erro
         console.error('Erro ao chamar a API:', error);
-        simulateAssistantResponse(message);
+        simulateAssistantResponse(message); // Usa a resposta simulada em caso de erro de API
       });
-
   }
-
 
 
   //Não deve permitir clique se o assistente estiver digitando
   const handleSuggestionPress = (query: string) => {
     if (isTyping) return;
 
-    // Adiciona o chip de usuário e a resposta do assistente imediatamente
+    // Adiciona o chip de usuário
     setMessages((prev) => [
       ...prev,
       { id: `u_s${prev.length + 1}`, text: query, sender: 'user_chip' },

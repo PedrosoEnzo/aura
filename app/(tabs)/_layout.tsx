@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, StyleSheet, ViewStyle } from "react-native";
+import { View, StyleSheet, ViewStyle } from "react-native"; // Não precisamos de Dimensions, pois left/right já resolvem
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface TabBarBackgroundProps {
@@ -9,7 +9,7 @@ interface TabBarBackgroundProps {
 
 const TabBarBackground = ({ style }: TabBarBackgroundProps) => (
   <LinearGradient
-    colors={['#3d664bff', '#264e36ff']}
+    colors={['#0a5246ff', '#004d40']}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 0 }}
     style={[StyleSheet.absoluteFill, styles.gradientBackground, style]}
@@ -52,8 +52,8 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          height: 70, 
-          width: 480,            
+          height: 70,
+          // REMOVIDO: width: 480, 
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -3 },
           shadowOpacity: 0.15,
@@ -62,13 +62,14 @@ export default function TabsLayout() {
           elevation: 6,
           position: 'absolute',
           left: 8,
-          right: 8,
+          right: 8, // Isso garante que a barra se estenda de left a right
           bottom: 4,
         },
         tabBarItemStyle: {
           justifyContent: "center",
           alignItems: "center",
           paddingVertical: 10,
+          // As abas internas se dividirão igualmente o espaço restante
         },
         tabBarBackground: () => <TabBarBackground />,
       }}
@@ -112,6 +113,7 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   gradientBackground: {
     borderRadius: 30,
+    // Alterei para 'auto' ou mantive 10 para ajustar a margem do gradiente dentro do container
     marginHorizontal: 10,
     overflow: 'hidden',
   },
