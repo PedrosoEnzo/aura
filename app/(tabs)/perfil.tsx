@@ -326,13 +326,15 @@ export default function Perfil() {
           </TouchableOpacity>
         </View>
         < View style={styles.titleContainer}>
-          <Text style={styles.titlePerfil}>Olá, <TextInput
+          <Text style={styles.titlePerfil1}>Olá,</Text>
+
+          <TextInput
             style={styles.titlePerfil}
             value={formData.nome}
             onChangeText={(t) => setFormData({ ...formData, nome: t })}
             placeholder="Nome"
             placeholderTextColor="#666"
-          /> </Text>
+          />
 
 
         </View>
@@ -485,17 +487,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignSelf: 'flex-start', // Alinha o título à esquerda
   },
+
+  titlePerfil1: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#004d40",
+    marginTop: 3,
+  },
+
   titlePerfil: {
     fontSize: 22,
-    fontWeight: "900", 
-    color: "#004d40", 
+    fontWeight: "900",
+    color: "#004d40",
   },
 
   // === Avatar ===
   avatarContainer: {
     alignItems: "center",
-    marginBottom: 30, 
-    elevation: 10, 
+    marginTop: 20,
+    marginBottom: 30,
+    elevation: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -506,16 +517,16 @@ const styles = StyleSheet.create({
   avatar: {
     width: 150,
     height: 150,
-    borderRadius: 75, 
+    borderRadius: 75,
     borderWidth: 4,
-    borderColor: "#4caf50", 
+    borderColor: "#4caf50",
     backgroundColor: "#e0e0e0",
   },
   cameraOverlay: {
     position: "absolute",
     bottom: 5,
     right: 5,
-    backgroundColor: "#4caf50", 
+    backgroundColor: "#4caf50",
     padding: 10,
     borderRadius: 25,
     borderWidth: 2,
@@ -535,11 +546,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e0e0e0", 
+    borderColor: "#e0e0e0",
     paddingHorizontal: 15,
-    paddingVertical: 14, 
-    marginBottom: 15, 
-    elevation: 2, 
+    paddingVertical: 14,
+    marginBottom: 15,
+    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -575,19 +586,19 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     fontSize: 16,
     color: "#333333",
-    fontWeight: "500", 
+    fontWeight: "500",
   },
 
   // === Botão de Ação ===
   updateButton: {
     backgroundColor: "#004d40",
-    paddingVertical: 15, 
+    paddingVertical: 15,
     paddingHorizontal: 50,
     borderRadius: 30,
     marginTop: 30,
     alignItems: "center",
     width: '80%',
-    elevation: 5, 
+    elevation: 5,
     shadowColor: "#2e502fff",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
@@ -604,7 +615,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -5,
     right: -5,
-    backgroundColor: "#e53935", 
+    backgroundColor: "#e53935",
     width: 22,
     height: 22,
     borderRadius: 11,
@@ -646,14 +657,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: 'center',
     padding: 15,
-    backgroundColor: "#f9f9f9", 
+    backgroundColor: "#f9f9f9",
     borderRadius: 10,
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#eee',
   },
   modalButton: {
-    backgroundColor: "#004d40", 
+    backgroundColor: "#004d40",
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 25,
