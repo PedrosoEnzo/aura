@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "5055b4fb-61d8-4c1c-a3b4-9d17c2f4ad91"
+      }
+    },
+    "android": {
+      "package": "com.auone.aura"
+    }
+  }
+}
