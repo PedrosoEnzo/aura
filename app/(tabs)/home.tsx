@@ -16,8 +16,10 @@ import {
   MaterialCommunityIcons,
   Feather,
 } from "@expo/vector-icons";
-
-import AgroBanner from "./AgroBanner";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { Alert } from "react-native";
+import AgroBanner from "../components/AgroBanner";
 
 
 // ===== CONFIGURAÇÃO DAS APIs =====
@@ -114,6 +116,38 @@ export default function Home() {
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  const gerarPDF = async () => {
+  try {
+    const response = await fetch("https://aura-back-app.onrender.com/api/dados/ultimos20");
+    const dados = await response.json();
+
+    if (!dados.length) return Alert.alert("Não há dados para gerar relatório.");
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Relatório - Últimos 20 Dados", 14, 20);
+
+    const colunas = Object.keys(dados[0]);
+    const linhas = dados.map((item: any) => colunas.map((col) => item[col]));
+
+    doc.autoTable({
+      startY: 30,
+      head: [colunas],
+      body: linhas,
+    });
+
+    const pdfBase64 = doc.output("datauristring");
+    // Aqui você pode abrir no visualizador com Linking:
+    // import { Linking } from "react-native";
+    // Linking.openURL(pdfBase64);
+
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Erro ao gerar PDF");
+  }
+};
+
 
   // ===== SALVAR PERFIL =====
   const handleSave = async () => {
@@ -269,10 +303,11 @@ export default function Home() {
           <TouchableOpacity
             style={styles.secondaryButton}
             activeOpacity={0.7}
-            onPress={() => alert('Função de Relatório será implementada aqui!')} // Ação temporária
+            onPress={gerarPDF} // substitui o alert pela função de gerar PDF
           >
             <Text style={styles.secondaryButtonText}>Relatório Dos Dados</Text>
           </TouchableOpacity>
+
 
           {editMode ? (
             // Botão Primário - Salvar

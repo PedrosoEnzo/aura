@@ -301,6 +301,11 @@ export default function Perfil() {
     }
   };
 
+  const removerNotificacao = (id: string) => {
+    setNotificacoes((prev) => prev.filter((n) => n.id !== id));
+  };
+
+
   if (loading) return <ActivityIndicator size="large" color="#1b5e20" style={{ marginTop: 40 }} />;
 
   return (
@@ -310,10 +315,7 @@ export default function Perfil() {
         <View style={{ width: "100%", alignItems: "flex-end", marginBottom: 10 }}>
           <TouchableOpacity
             style={{ padding: 10 }}
-            onPress={() => {
-              setShowNotifications(true);
-              setNotificacoes([]);
-            }}
+            onPress={() => setShowNotifications(true)}
           >
             <View>
               <Feather name="bell" size={30} color="#1b5e20" />
@@ -449,13 +451,20 @@ export default function Perfil() {
                 notificacoes.map((n) => (
                   <View key={n.id} style={styles.notificacaoItem}>
                     <Feather name="bell" size={20} color="#1b5e20" />
-                    <View style={{ marginLeft: 10 }}>
+
+                    <View style={{ marginLeft: 10, flex: 1 }}>
                       <Text style={{ fontWeight: "600" }}>{n.texto}</Text>
                       <Text style={{ fontSize: 12, color: "#666" }}>
                         {new Date(n.timestamp).toLocaleString()}
                       </Text>
                     </View>
+
+                    {/* Botão para remover a notificação */}
+                    <TouchableOpacity onPress={() => removerNotificacao(n.id)}>
+                      <Feather name="x" size={22} color="#c53030" />
+                    </TouchableOpacity>
                   </View>
+
                 ))
               )}
             </ScrollView>
