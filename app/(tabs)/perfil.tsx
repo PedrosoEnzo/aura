@@ -341,7 +341,7 @@ export default function Perfil() {
         <TouchableOpacity onPress={editMode ? handlePickImage : undefined} style={styles.avatarContainer}>
           <Image
             style={styles.avatar}
-            source={formData.foto ? { uri: formData.foto } : require('../../assets/images/avatar-placeholder.png')}
+            source={formData.foto ? { uri: formData.foto } : require('../../assets/images/auone.png')}
           />
           {editMode && (
             <View style={styles.cameraOverlay}>
