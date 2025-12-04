@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start', // Alinha o título à esquerda
   },
   titlePerfil: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "900", 
     color: "#004d40", 
   },
