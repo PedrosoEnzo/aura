@@ -16,7 +16,9 @@ import {
   MaterialCommunityIcons,
   Feather,
 } from "@expo/vector-icons";
-
+// Home.tsx
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 import AgroBanner from "../components/AgroBanner";
 
 // ===== CONFIGURAÇÃO DAS APIs =====
@@ -36,6 +38,15 @@ interface Usuario {
   dispositivosAtivos?: number;
   ultimaAtualizacao?: string;
 }
+
+interface Sensores {
+  umidadeSolo: number | null;
+  luminosidade: number | null;
+  tempSolo: number | null;
+  tempAr: number | null;
+  umidadeAr: number | null;
+}
+
 
 // ===== COMPONENTE PRINCIPAL =====
 export default function Home() {
@@ -112,6 +123,102 @@ export default function Home() {
   // ===== MANIPULAÇÃO DE CAMPOS =====
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const gerarRelatorioPDF = async (usuario: Usuario | null, sensores: Sensores) => {
+    try {
+      const html = `
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            body { font-family: Arial, sans-serif; padding: 24px; color: #222; }
+            .header { display:flex; align-items:center; gap:16px; }
+            .title { color:#0a5246; margin:0; }
+            .badge { background:#0a5246; color:#fff; padding:6px 10px; border-radius:16px; font-size:12px; }
+            .section { margin-top:24px; }
+            .section h2 { color:#0a5246; margin-bottom:12px; }
+            .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+            .card { border:1px solid #eee; border-radius:12px; padding:12px; }
+            .label { font-size:12px; color:#666; }
+            .value { font-size:16px; font-weight:700; color:#004d40; }
+            .footer { margin-top:32px; font-size:12px; color:#666; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 class="title">Relatório de Dados</h1>
+            <span class="badge">${new Date().toLocaleString()}</span>
+          </div>
+
+          <div class="section">
+            <h2>Usuário</h2>
+            <div class="grid">
+              <div class="card">
+                <div class="label">Nome</div>
+                <div class="value">${usuario?.nome || "-"}</div>
+              </div>
+              <div class="card">
+                <div class="label">Empresa</div>
+                <div class="value">${usuario?.empresa || "-"}</div>
+              </div>
+              <div class="card">
+                <div class="label">Área total</div>
+                <div class="value">${usuario?.areaTotal ?? "-"} hectares</div>
+              </div>
+              <div class="card">
+                <div class="label">Cultivos</div>
+                <div class="value">${usuario?.cultivos || "-"}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Sensores</h2>
+            <div class="grid">
+              <div class="card">
+                <div class="label">Umidade do solo</div>
+                <div class="value">${sensores.umidadeSolo ?? "-"}%</div>
+              </div>
+              <div class="card">
+                <div class="label">Luminosidade</div>
+                <div class="value">${sensores.luminosidade ?? "-"} lux</div>
+              </div>
+              <div class="card">
+                <div class="label">Temperatura do ar</div>
+                <div class="value">${sensores.tempAr ?? "-"}°C</div>
+              </div>
+              <div class="card">
+                <div class="label">Umidade do ar</div>
+                <div class="value">${sensores.umidadeAr ?? "-"}%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            Gerado por Aura • Última atualização: ${usuario?.ultimaAtualizacao
+          ? new Date(usuario.ultimaAtualizacao).toLocaleString()
+          : "-"}
+          </div>
+        </body>
+      </html>
+    `;
+
+      // Gera o arquivo PDF
+      const { uri } = await Print.printToFileAsync({ html });
+
+      // Abre menu de compartilhamento/salvamento
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(uri);
+      } else {
+        // Fallback simples: imprime no sistema (útil no web)
+        await Print.printAsync({ html });
+      }
+    } catch (err) {
+      console.log("Erro ao gerar PDF:", err);
+      alert("Não foi possível gerar o PDF. Tente novamente.");
+    }
   };
 
   // ===== SALVAR PERFIL =====
@@ -268,10 +375,11 @@ export default function Home() {
           <TouchableOpacity
             style={styles.secondaryButton}
             activeOpacity={0.7}
-            onPress={() => alert('Função de Relatório será implementada aqui!')} // Ação temporária
+            onPress={() => gerarRelatorioPDF(usuario, sensores)}
           >
             <Text style={styles.secondaryButtonText}>Relatório Dos Dados</Text>
           </TouchableOpacity>
+
 
           {editMode ? (
             // Botão Primário - Salvar
