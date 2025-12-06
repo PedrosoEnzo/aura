@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Rotas de Cores
 const COLORS = {
@@ -16,7 +17,7 @@ const COLORS = {
 };
 
 // Configuração da URL da API hospedada no Render
-const RENDER_API_URL = "http://localhost:3000/api/chat/message";
+const RENDER_API_URL = "https://aura-back-app.onrender.com/api/chat/message";
 
 interface Suggestion {
   id: string;
@@ -443,30 +444,50 @@ const App = () => {
   }
 
 
-  function sendMessageToAPI(message: string) {
-    setIsTyping(true); // Inicia o indicador enquanto espera a API
-    fetch(RENDER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: message }),
-    }).then((response) => response.json())
-      .then((data) => {
-        setIsTyping(false); // Para ao receber resposta da API
-        console.log('Resposta da API:', data.response);
-        setMessages((prev) => [
-          ...prev,
-          { id: `m${prev.length + 1}`, text: data.response, sender: 'assistant' },
-        ]);
-      })
-      .catch((error) => {
-        setIsTyping(false); // Para em caso de erro
-        console.error('Erro ao chamar a API:', error);
-        simulateAssistantResponse(message); // Usa a resposta simulada em caso de erro de API
-      });
-  }
+  async function sendMessageToAPI(message: string) {
+  setIsTyping(true);
 
+  try {
+    // Recupera o id salvo no login
+    const userId = await AsyncStorage.getItem("usuarioId");
+
+    if (!userId) {
+      console.error("Nenhum usuário logado encontrado");
+      setIsTyping(false);
+      return;
+    }
+
+    const response = await fetch(RENDER_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: userId,   // agora vai o id real do AsyncStorage
+        message: message,
+      }),
+    });
+
+    const data = await response.json();
+
+    setIsTyping(false);
+
+    if (response.ok) {
+      console.log("Resposta da API:", data.response);
+      setMessages((prev) => [
+        ...prev,
+        { id: `m${prev.length + 1}`, text: data.response, sender: "assistant" },
+      ]);
+    } else {
+      console.error("Erro da API:", data.error || data);
+      simulateAssistantResponse(message);
+    }
+  } catch (error) {
+    setIsTyping(false);
+    console.error("Erro ao chamar a API:", error);
+    simulateAssistantResponse(message);
+  }
+}
 
   //Não deve permitir clique se o assistente estiver digitando
   const handleSuggestionPress = (query: string) => {
