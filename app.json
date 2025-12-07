@@ -1,12 +1,33 @@
 {
   "expo": {
+    "name": "Auone",
+    "slug": "auone",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "extra": {
       "eas": {
         "projectId": "5055b4fb-61d8-4c1c-a3b4-9d17c2f4ad91"
       }
     },
     "android": {
-      "package": "com.auone.aura"
+      "package": "com.auone.aura",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
     }
   }
 }
