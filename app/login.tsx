@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// ✅ URL correta da sua API
+// URL correta da sua API
 const API_URL = 'https://aura-back-app.onrender.com/api/auth';
 
 export default function Login() {

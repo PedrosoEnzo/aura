@@ -21,7 +21,7 @@ export default function NovaSenha() {
   const params = useLocalSearchParams<{ email: string }>();
   const email = params.email;
 
-  const handleRedefinir = () => {
+  const handleRedefinir = async () => {
     if (!senha || !confirmarSenha) {
       Alert.alert("Erro", "Preencha todos os campos.");
       return;
@@ -39,14 +39,26 @@ export default function NovaSenha() {
 
     setLoading(true);
 
-    // Aqui você pode adicionar integração com backend para salvar a nova senha
-    console.log(`Nova senha para ${email}: ${senha}`);
+    try {
+      const response = await fetch("https://aura-back-app.onrender.com/api/auth/redefinirSenha", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, novaSenha: senha }),
+      });
 
-    setTimeout(() => {
-      setLoading(false);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.erro || "Erro ao redefinir senha");
+      }
+
       Alert.alert("Sucesso", "Senha redefinida com sucesso!");
       router.push("/login");
-    }, 1000); // simula envio para backend
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert("Erro", error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
