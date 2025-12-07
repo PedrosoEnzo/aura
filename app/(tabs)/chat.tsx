@@ -132,33 +132,44 @@ const App = () => {
   };
 
   const sendMessageToAPI = async (message: string) => {
-    setIsTyping(true);
-    try {
-      const userId = await AsyncStorage.getItem('usuarioId');
-      if (!userId) {
-        simulateAssistantResponse(message);
-        return;
-      }
+  setIsTyping(true);
 
-      const response = await fetch(RENDER_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, message }),
-      });
+  try {
+    const userId = await AsyncStorage.getItem('usuarioId');
 
-      const data = await response.json();
-      if (response.ok) {
-        setMessages(prev => [...prev, { id: `m${prev.length + 1}`, text: data.response, sender: 'assistant' }]);
-      } else {
-        simulateAssistantResponse(message);
-      }
-    } catch (error) {
-      simulateAssistantResponse(message);
-    } finally {
-      setIsTyping(false);
-      updateSuggestions(message); // ✅ só mostra alternativas depois que termina
+    if (!userId) {
+      throw new Error("Usuário não encontrado no dispositivo.");
     }
-  };
+
+    const response = await fetch(RENDER_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, message }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.erro || "Erro ao obter resposta do servidor.");
+    }
+
+    // RESPOSTA REAL DO BACKEND
+    setMessages(prev => [
+      ...prev,
+      { id: `m${prev.length + 1}`, text: data.response, sender: 'assistant' },
+    ]);
+
+  } catch (error: any) {
+    setMessages(prev => [
+      ...prev,
+      { id: `err${prev.length + 1}`, text: `Erro: ${error.message}`, sender: 'assistant' },
+    ]);
+  } finally {
+    setIsTyping(false);
+    updateSuggestions(message);
+  }
+};
+
 
   const simulateAssistantResponse = (query: string) => {
     const responseText = `Entendi sua pergunta sobre **"${query}"**. Esta é uma resposta simulada.`;
